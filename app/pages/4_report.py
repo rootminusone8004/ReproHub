@@ -4,7 +4,7 @@ Report Page — Report Generation
 
 import streamlit as st
 from datetime import datetime
-from ..config import config
+from app.config import config
 
 
 def render():
