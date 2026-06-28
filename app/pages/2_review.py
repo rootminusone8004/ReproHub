@@ -13,17 +13,18 @@ import streamlit as st
 from core.matcher import classify_columns
 from core.comparator import ComparisonEngine
 
-# Param slots each test type needs, and which column pool (numeric vs
-# categorical) each slot should be picked from. Mirrors core/engine.py's
-# _run_* signatures and core/matcher.py's test groupings.
 REQUIRED_PARAMS = {
-    "t_test_independent": [("group_col", "categorical"), ("value_col", "numeric")],
-    "paired_t_test": [("col1", "numeric"), ("col2", "numeric")],
-    "one_way_anova": [("group_col", "categorical"), ("value_col", "numeric")],
-    "pearson_correlation": [("col1", "numeric"), ("col2", "numeric")],
+    "t_test_independent":   [("group_col", "categorical"), ("value_col", "numeric")],
+    "paired_t_test":        [("col1", "numeric"), ("col2", "numeric")],
+    "one_way_anova":        [("group_col", "categorical"), ("value_col", "numeric")],
+    "pearson_correlation":  [("col1", "numeric"), ("col2", "numeric")],
     "spearman_correlation": [("col1", "numeric"), ("col2", "numeric")],
-    "chi_square": [("col1", "categorical"), ("col2", "categorical")],
-    "mann_whitney_u": [("group_col", "categorical"), ("value_col", "numeric")],
+    "chi_square":           [("col1", "categorical"), ("col2", "categorical")],
+    "mann_whitney_u":       [("group_col", "categorical"), ("value_col", "numeric")],
+    "kruskal_wallis":       [("group_col", "categorical"), ("value_col", "numeric")],
+    "wilcoxon_signed_rank": [("col1", "numeric"), ("col2", "numeric")],
+    "linear_regression":    [("dependent_col", "numeric"), ("independent_cols", "numeric")],
+    "logistic_regression":  [("dependent_col", "categorical"), ("independent_cols", "numeric")],
 }
 
 _PLACEHOLDER = "— select a column —"
@@ -50,9 +51,6 @@ def _render_column_mapping(idx: int, claim: dict, pools: dict) -> bool:
         options = pools[pool_name]
         current = params.get(param_key)
 
-        # Offer the proposed match first (even if it came from a different
-        # pool, e.g. matcher guessed wrong) so the user's existing pick
-        # isn't silently dropped from the dropdown.
         choices = [_PLACEHOLDER] + options
         if current and current not in choices:
             choices.insert(1, current)
