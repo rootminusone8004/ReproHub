@@ -1,52 +1,63 @@
 /* ========================================
    ReproHub - Main Stylesheet
-   Dark theme with emerald green accents
+   Instrument-panel aesthetic: deep ink-blue ground,
+   warm paper-white text, calibrated signal colors.
+   Built around the idea that the numbers ARE the
+   product - measurement readouts, not decoration.
    ======================================== */
 
 /* ===== ROOT VARIABLES ===== */
 :root {
-    /* Colors */
-    --primary: #34D399;
-    --primary-dark: #059669;
-    --primary-light: #6EE7B7;
-    --primary-bg: rgba(52, 211, 153, 0.1);
-    
-    --background: #0F172A;
-    --background-light: #1E293B;
-    --background-dark: #020617;
-    
-    --text: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --text-muted: #64748B;
-    
-    --border: #1E293B;
-    --border-light: #334155;
-    
-    --success: #22C55E;
-    --warning: #F59E0B;
-    --danger: #EF4444;
-    --info: #3B82F6;
-    
+    /* Ground - deep ink-blue, not flat black */
+    --background: #0B1220;
+    --background-light: #131D30;
+    --background-dark: #060A12;
+    --surface-raised: #16223A;
+
+    /* Text - warm paper-white, not pure white */
+    --text: #F1EDE4;
+    --text-secondary: #9AA5B8;
+    --text-muted: #5C6680;
+
+    /* Signal colors - calibrated instrument indicators, not SaaS-default green/red */
+    --signal-verified: #2DD4BF;      /* teal - "reproduced" */
+    --signal-verified-dim: rgba(45, 212, 191, 0.14);
+    --signal-marginal: #E8A33D;      /* amber - "marginally reproduced" */
+    --signal-marginal-dim: rgba(232, 163, 61, 0.14);
+    --signal-discrepant: #F0653E;    /* red-orange - "not reproduced" */
+    --signal-discrepant-dim: rgba(240, 101, 62, 0.14);
+    --signal-neutral: #6B7690;       /* slate - "could not verify" */
+    --signal-neutral-dim: rgba(107, 118, 144, 0.14);
+
+    /* Primary accent - used for interactive elements, not status */
+    --accent: #5EA9E0;
+    --accent-dim: rgba(94, 169, 224, 0.14);
+
+    --border: #1E293D;
+    --border-light: #2C3A54;
+
     /* Spacing */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
     --spacing-md: 1rem;
     --spacing-lg: 2rem;
     --spacing-xl: 4rem;
-    
-    /* Fonts */
-    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    /* Fonts - mono carries more weight than usual, since numeric
+       readouts are the actual content of this product */
+    --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', monospace;
+    --font-display: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    
-    /* Border radius */
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 16px;
-    
-    /* Shadows */
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+
+    /* Border radius - slightly sharper than generic-rounded SaaS */
+    --radius-sm: 3px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+
+    /* Shadows - restrained, no glow effects */
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 10px rgba(0,0,0,0.45);
+    --shadow-lg: 0 10px 28px rgba(0,0,0,0.5);
 }
 
 /* ===== GLOBAL RESET ===== */
@@ -64,6 +75,14 @@ body {
     min-height: 100vh;
 }
 
+/* Numeric/statistical output reads as a measurement readout, not body text */
+.stat-readout,
+[data-testid="stMetricValue"],
+[data-testid="stDataFrame"] td.numeric {
+    font-family: var(--font-mono) !important;
+    letter-spacing: -0.01em;
+}
+
 /* ===== SIDEBAR ===== */
 [data-testid="stSidebar"] {
     background-color: var(--background-dark) !important;
@@ -71,107 +90,126 @@ body {
 }
 
 [data-testid="stSidebar"] h1 {
-    color: var(--primary) !important;
-    font-size: 1.5rem !important;
+    color: var(--text) !important;
+    font-family: var(--font-display) !important;
+    font-size: 1.4rem !important;
     font-weight: 700 !important;
+    letter-spacing: -0.01em;
 }
 
 [data-testid="stSidebar"] h3 {
     color: var(--text-secondary) !important;
-    font-size: 0.85rem !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
 }
 
 /* ===== METRIC CARDS ===== */
 [data-testid="metric-container"] {
-    background-color: var(--background-light) !important;
+    background-color: var(--surface-raised) !important;
     border: 1px solid var(--border) !important;
-    border-radius: var(--radius-md) !important;
+    border-left: 2px solid var(--accent) !important;
+    border-radius: var(--radius-sm) !important;
     padding: var(--spacing-md) !important;
-    transition: all 0.2s ease !important;
+    transition: border-color 0.15s ease, background-color 0.15s ease !important;
 }
 
 [data-testid="metric-container"]:hover {
-    border-color: var(--primary) !important;
-    box-shadow: var(--shadow-md) !important;
+    border-left-color: var(--signal-verified) !important;
+    background-color: var(--background-light) !important;
 }
 
-[data-testid="metric-container"] .metric-value {
-    color: var(--primary) !important;
+[data-testid="metric-container"] .metric-value,
+[data-testid="stMetricValue"] {
+    color: var(--text) !important;
     font-family: var(--font-mono) !important;
+    font-weight: 600 !important;
 }
 
-[data-testid="metric-container"] .metric-label {
+[data-testid="metric-container"] .metric-label,
+[data-testid="stMetricLabel"] {
     color: var(--text-secondary) !important;
+    font-size: 0.72rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
-/* ===== STATUS BADGES ===== */
+/* ===== STATUS BADGES =====
+   Styled as inspection/calibration stamps rather than generic
+   rounded pills - a slight rotation and stamped double-border
+   gives each verdict the feel of a verification mark, not a tag. */
 .status-badge {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.025em;
+    position: relative;
+    padding: 0.3rem 0.85rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    transform: rotate(-1.4deg);
 }
 
 .status-reproduced {
-    background: rgba(34, 197, 94, 0.2);
-    color: var(--success);
-    border: 1px solid rgba(34, 197, 94, 0.3);
+    background: var(--signal-verified-dim);
+    color: var(--signal-verified);
+    border: 1px solid var(--signal-verified);
+    box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.15);
 }
 
 .status-marginal {
-    background: rgba(245, 158, 11, 0.2);
-    color: var(--warning);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: var(--signal-marginal-dim);
+    color: var(--signal-marginal);
+    border: 1px solid var(--signal-marginal);
+    box-shadow: inset 0 0 0 1px rgba(232, 163, 61, 0.15);
 }
 
 .status-not-reproduced {
-    background: rgba(239, 68, 68, 0.2);
-    color: var(--danger);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: var(--signal-discrepant-dim);
+    color: var(--signal-discrepant);
+    border: 1px solid var(--signal-discrepant);
+    box-shadow: inset 0 0 0 1px rgba(240, 101, 62, 0.15);
 }
 
 .status-could-not-verify {
-    background: rgba(148, 163, 184, 0.15);
-    color: var(--text-secondary);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--signal-neutral-dim);
+    color: var(--signal-neutral);
+    border: 1px dashed var(--signal-neutral);
+    transform: rotate(0deg); /* dashed border signals "pending", not stamped */
 }
 
 /* ===== BUTTONS ===== */
 .stButton > button {
-    background-color: var(--primary) !important;
+    background-color: var(--accent) !important;
     color: var(--background-dark) !important;
     font-weight: 600 !important;
     border: none !important;
-    border-radius: var(--radius-md) !important;
+    border-radius: var(--radius-sm) !important;
     padding: 0.5rem 1.5rem !important;
-    transition: all 0.2s ease !important;
+    transition: filter 0.15s ease, transform 0.1s ease !important;
 }
 
 .stButton > button:hover {
-    background-color: var(--primary-dark) !important;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    filter: brightness(1.12);
 }
 
 .stButton > button:active {
-    transform: translateY(0);
+    transform: scale(0.98);
 }
 
 /* Secondary button */
 .stButton > button[data-testid="baseButton-secondary"] {
-    background-color: var(--background-light) !important;
+    background-color: var(--surface-raised) !important;
     color: var(--text) !important;
-    border: 1px solid var(--border) !important;
+    border: 1px solid var(--border-light) !important;
 }
 
 .stButton > button[data-testid="baseButton-secondary"]:hover {
-    border-color: var(--primary) !important;
-    color: var(--primary) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    filter: none;
 }
 
 /* ===== DATA FRAMES ===== */
@@ -184,34 +222,41 @@ body {
 [data-testid="stDataFrame"] thead th {
     background-color: var(--background-dark) !important;
     color: var(--text-secondary) !important;
-    font-size: 0.75rem !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     padding: 0.75rem !important;
 }
 
 [data-testid="stDataFrame"] tbody td {
     padding: 0.5rem 0.75rem !important;
     border-bottom: 1px solid var(--border) !important;
+    font-family: var(--font-mono) !important;
+    font-size: 0.85rem !important;
+}
+
+[data-testid="stDataFrame"] tbody tr:hover td {
+    background-color: var(--background-light) !important;
 }
 
 /* ===== EXPANDERS ===== */
 .streamlit-expanderHeader {
-    background-color: var(--background-light) !important;
+    background-color: var(--surface-raised) !important;
     border: 1px solid var(--border) !important;
-    border-radius: var(--radius-md) !important;
+    border-radius: var(--radius-sm) !important;
     color: var(--text) !important;
     font-weight: 600 !important;
 }
 
 .streamlit-expanderHeader:hover {
-    border-color: var(--primary) !important;
+    border-color: var(--accent) !important;
 }
 
 /* ===== TABS ===== */
 .stTabs [data-baseweb="tab-list"] {
     gap: 0.5rem;
-    border-bottom: 2px solid var(--border) !important;
+    border-bottom: 1px solid var(--border) !important;
 }
 
 .stTabs [data-baseweb="tab"] {
@@ -221,29 +266,33 @@ body {
 }
 
 .stTabs [data-baseweb="tab"][aria-selected="true"] {
-    color: var(--primary) !important;
-    border-bottom: 2px solid var(--primary) !important;
+    color: var(--accent) !important;
+    border-bottom: 2px solid var(--accent) !important;
 }
 
 /* ===== CODE BLOCKS ===== */
 .stCodeBlock {
     background-color: var(--background-dark) !important;
     border: 1px solid var(--border) !important;
-    border-radius: var(--radius-md) !important;
+    border-radius: var(--radius-sm) !important;
 }
 
 .stCodeBlock pre {
     color: var(--text) !important;
+    font-family: var(--font-mono) !important;
 }
 
-/* ===== INFO/WARNING/ERROR BOXES ===== */
+/* ===== INFO/WARNING/ERROR BOXES =====
+   Mapped to the same signal colors as the status badges, so a
+   "could not verify" alert and a "could not verify" claim badge
+   read as the same concept everywhere in the app. */
 .stAlert {
-    border-radius: var(--radius-md) !important;
+    border-radius: var(--radius-sm) !important;
     border: 1px solid var(--border) !important;
 }
 
 .stAlert[data-baseweb="notification"] {
-    background-color: var(--background-light) !important;
+    background-color: var(--surface-raised) !important;
 }
 
 .stAlert .stMarkdown {
@@ -252,24 +301,24 @@ body {
 
 /* ===== PROGRESS BAR ===== */
 .stProgress > div > div {
-    background-color: var(--primary) !important;
+    background-color: var(--accent) !important;
 }
 
 /* ===== FILE UPLOADER ===== */
 [data-testid="stFileUploader"] {
-    border: 2px dashed var(--border) !important;
+    border: 1px dashed var(--border-light) !important;
     border-radius: var(--radius-md) !important;
     padding: var(--spacing-lg) !important;
     background-color: var(--background-dark) !important;
-    transition: all 0.2s ease !important;
+    transition: border-color 0.15s ease !important;
 }
 
 [data-testid="stFileUploader"]:hover {
-    border-color: var(--primary) !important;
+    border-color: var(--accent) !important;
 }
 
 [data-testid="stFileUploader"] .stButton button {
-    background-color: var(--primary) !important;
+    background-color: var(--accent) !important;
     color: var(--background-dark) !important;
 }
 
@@ -289,7 +338,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--primary);
+    background: var(--accent);
 }
 
 /* ===== PLOTLY CHARTS ===== */
@@ -306,10 +355,32 @@ body {
     [data-testid="stSidebar"] {
         width: 100% !important;
     }
-    
-    [data-testid="metric-container"] .metric-value {
-        font-size: 1.5rem !important;
+
+    [data-testid="metric-container"] .metric-value,
+    [data-testid="stMetricValue"] {
+        font-size: 1.4rem !important;
     }
+
+    .status-badge {
+        transform: none; /* skip the stamp rotation on small screens - cleaner tap targets */
+    }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* ===== ACCESSIBILITY: VISIBLE FOCUS ===== */
+a:focus-visible,
+button:focus-visible,
+.stButton > button:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--accent) !important;
+    outline-offset: 2px !important;
 }
 
 /* ===== UTILITY ===== */
@@ -317,8 +388,8 @@ body {
     font-family: var(--font-mono);
 }
 
-.text-primary {
-    color: var(--primary);
+.text-accent {
+    color: var(--accent);
 }
 
 .text-secondary {
@@ -329,10 +400,6 @@ body {
     background-color: var(--background-dark);
 }
 
-.border-primary {
-    border-color: var(--primary);
-}
-
-.shadow-glow {
-    box-shadow: 0 0 30px rgba(52, 211, 153, 0.1);
+.border-accent {
+    border-color: var(--accent);
 }
