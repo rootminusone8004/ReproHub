@@ -61,56 +61,39 @@ _TEST_PATTERNS: Dict[str, "re.Pattern[str]"] = {
         rf"\b(?:Mann-Whitney\s+U|U)\s*=\s*(?P<stat>{_NUM})\s*,\s*p\s*{_P}",
         re.IGNORECASE,
     ),
+    "kruskal_wallis": re.compile(
+        rf"\b(?:Kruskal[–-]Wallis|H)\s*\(?\s*(?P<df>\d*)?\s*\)?\s*=\s*(?P<stat>{_NUM})\s*,\s*p\s*{_P}",
+        re.IGNORECASE,
+    ),
+    "wilcoxon_signed_rank": re.compile(
+        rf"\b(?:Wilcoxon(?:\s+signed[–-]rank)?|W)\s*=\s*(?P<stat>{_NUM})\s*,\s*p\s*{_P}",
+        re.IGNORECASE,
+    ),
+    "linear_regression": re.compile(
+        rf"\bF\s*\(\s*(?P<df1>\d+\.?\d*)\s*,\s*(?P<df2>\d+\.?\d*)\s*\)\s*=\s*(?P<stat>{_NUM})\s*,\s*p\s*{_P}[^,]*,\s*R[²2]\s*=\s*(?P<r2>{_NUM})",
+        re.IGNORECASE,
+    ),
+    "logistic_regression": re.compile(
+        rf"\b(?:logistic\s+regression|Wald\s+χ2|LR\s+χ2)\b[^,]*,?\s*(?:χ2|chi.?square)?\s*[=(]\s*(?P<stat>{_NUM})[^,]*,\s*p\s*{_P}",
+        re.IGNORECASE,
+    ),
 }
 
 # Effect-size patterns, checked against a small window of text following
 # each statistic match (effect sizes are conventionally reported right
 # after the p-value, e.g. "..., p = 0.03, Cohen's d = 0.45").
 _EFFECT_PATTERNS: Dict[str, "re.Pattern[str]"] = {
-    # Matches both "Cohen's d = 0.45" and the common abbreviated form
-    # "d = 0.92" used once "Cohen's d" has already been introduced
-    # earlier in the same sentence. \b before "d" avoids false-matching
-    # "df = 5" or other words ending in "d".
     "cohens_d": re.compile(r"(?:Cohen'?s\s+)?\bd\s*=\s*(-?\d*\.?\d+)", re.IGNORECASE),
     "eta_squared": re.compile(r"(?:partial\s+)?(?:eta squared|η²|η2)\s*=\s*(-?\d*\.?\d+)", re.IGNORECASE),
     "r_effect": re.compile(r"\br\s*=\s*(-?\d*\.?\d+)", re.IGNORECASE),
 }
 
-# How far past the end of a statistic match to look for its effect size,
-# in characters. Wide enough to catch "..., d = 0.45." but not so wide
-# it picks up an unrelated effect size from the next sentence.
 _EFFECT_SIZE_WINDOW = 60
-
-# How far to search outward from a matched statistic when building its
-# claim_statement, in characters. This is a search radius, not a fixed
-# output width - the actual output is clipped to the nearest sentence
-# boundary within this radius (see _extract_sentence_context), so most
-# claim statements end up much shorter than this.
 _CONTEXT_SEARCH_RADIUS = 300
-
-# How many sentences before the one containing the match to include.
-# The variable being measured is often named in the sentence just
-# before the one reporting the statistic (e.g. "...treatment and
-# control groups. Results showed t(88) = 2.1, p = 0.03."), so 1
-# sentence of lookback meaningfully helps core/matcher.py's fuzzy
-# column matching without pulling in unrelated context from further
-# back in the paragraph.
 _LOOKBACK_SENTENCES = 1
 
 
 def _extract_sentence_context(text: str, match_start: int, match_end: int) -> str:
-    """
-    Build a claim_statement by expanding outward from a matched
-    statistic to the nearest sentence boundaries, including a small
-    number of preceding sentences.
-
-    A fixed character-count window (the previous approach) risks
-    cutting off mid-word/mid-clause, which can silently remove the very
-    variable name core/matcher.py needs to fuzzy-match against dataset
-    columns. Expanding to sentence boundaries instead keeps whole
-    clauses intact, at the cost of variable-length output - callers
-    should not assume a fixed length.
-    """
     search_start = max(0, match_start - _CONTEXT_SEARCH_RADIUS)
     preceding = text[search_start:match_start]
     boundary_matches = list(re.finditer(r"[.!?]\s+", preceding))
@@ -118,8 +101,6 @@ def _extract_sentence_context(text: str, match_start: int, match_end: int) -> st
     if len(boundary_matches) > _LOOKBACK_SENTENCES:
         sentence_start = search_start + boundary_matches[-(_LOOKBACK_SENTENCES + 1)].end()
     else:
-        # Fewer sentence boundaries available than requested lookback -
-        # just use everything back to the search radius (or start of text).
         sentence_start = search_start
 
     search_end = min(len(text), match_end + _CONTEXT_SEARCH_RADIUS)
@@ -145,24 +126,6 @@ def _find_effect_size(text: str, search_start: int) -> Optional[float]:
 
 
 def extract_claims_from_paper(paper_text: str) -> List[Dict[str, Any]]:
-    """
-    Extract statistical claims from paper text using regex pattern
-    matching against conventional APA-style result reporting.
-
-    Args:
-        paper_text: Full text of the paper (e.g. from
-            utils.pdf_parser.extract_text_from_pdf).
-
-    Returns:
-        A list of claim dicts, each matching the shape expected by
-        core.schema.Claim:
-            - id, test_type, claimed_p_value, claimed_effect_size,
-              params (always {} - see module docstring), claim_statement,
-              source ("regex_extracted"), extraction_confidence.
-        Returns an empty list if no recognizable statistics are found,
-        e.g. for blank input or papers that report results purely in
-        prose without inline notation.
-    """
     if not paper_text or not paper_text.strip():
         return []
 
@@ -177,10 +140,9 @@ def extract_claims_from_paper(paper_text: str) -> List[Dict[str, Any]]:
             try:
                 claimed_p_value = float(groups["p"])
             except (KeyError, ValueError):
-                continue  # Shouldn't happen given the pattern, but don't crash on a bad match.
+                continue
 
             effect_size = _find_effect_size(paper_text, match.end())
-
             claim_statement = _extract_sentence_context(paper_text, match.start(), match.end())
 
             claims.append({
@@ -188,17 +150,9 @@ def extract_claims_from_paper(paper_text: str) -> List[Dict[str, Any]]:
                 "test_type": test_type,
                 "claimed_p_value": claimed_p_value,
                 "claimed_effect_size": effect_size,
-                # Left empty intentionally - see module docstring. Must be
-                # filled in by core.matcher's fuzzy matching against the
-                # uploaded dataset's columns, or manually on the Review page.
                 "params": {},
                 "claim_statement": claim_statement,
                 "source": "regex_extracted",
-                # Confidence reflects pattern-match certainty, not whether
-                # the claim will actually be verifiable - a match with a
-                # clean, unambiguous df/stat/p triplet is "high"; matches
-                # missing an effect size or df are downgraded since they're
-                # more likely to be partial/malformed matches.
                 "extraction_confidence": (
                     "high" if effect_size is not None or "df" not in groups
                     else "medium"
