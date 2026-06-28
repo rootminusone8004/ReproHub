@@ -1,4 +1,3 @@
-"""Streamlit pages package."""
-from . import upload, review, dashboard, report, about
-
-__all__ = ["upload", "review", "dashboard", "report", "about"]
+"""ReproHub - Research Reproducibility Verification Platform."""
+__version__ = "1.0.0"
+__author__ = "Junaid Ahmed Rupok"
