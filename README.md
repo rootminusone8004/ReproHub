@@ -157,7 +157,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Inspired by the reproducibility crisis in scientific research
-- Built for the Erasmus Mundus Scholarship application
 - Powered by open-source Python libraries
 
 ---
