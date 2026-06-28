@@ -17,7 +17,7 @@
     /* Text - warm paper-white, not pure white */
     --text: #F1EDE4;
     --text-secondary: #9AA5B8;
-    --text-muted: #5C6680;
+    --text-muted: #737E97;          /* AA-verified: 4.60:1 on --background */
 
     /* Signal colors - calibrated instrument indicators, not SaaS-default green/red */
     --signal-verified: #2DD4BF;      /* teal - "reproduced" */
@@ -26,8 +26,8 @@
     --signal-marginal-dim: rgba(232, 163, 61, 0.14);
     --signal-discrepant: #F0653E;    /* red-orange - "not reproduced" */
     --signal-discrepant-dim: rgba(240, 101, 62, 0.14);
-    --signal-neutral: #6B7690;       /* slate - "could not verify" */
-    --signal-neutral-dim: rgba(107, 118, 144, 0.14);
+    --signal-neutral: #8290AC;       /* slate - "could not verify"; AA-verified: 4.84:1 against its own composited badge bg */
+    --signal-neutral-dim: rgba(130, 144, 172, 0.14);
 
     /* Primary accent - used for interactive elements, not status */
     --accent: #5EA9E0;
