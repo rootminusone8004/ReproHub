@@ -1,7 +1,12 @@
 """
 ReproHub - Main Application Entry Point
 Streamlit web application for research reproducibility verification.
+
+Path: app/main.py
+Run from the project root with: streamlit run app/main.py
 """
+import importlib
+
 import streamlit as st
 
 # Must be the first Streamlit command
@@ -15,13 +20,21 @@ st.set_page_config(
 from app.config import config, ConfigError
 
 # Pages, in pipeline order, with the session-state flag (if any) required
-# to reach them. "upload" has no prerequisite - it's the front door.
+# to reach them, and the actual module path under app/pages/.
+#
+# Note: these files use Streamlit's numbered-prefix naming convention
+# (1_upload.py, 2_review.py, ...), which Streamlit's *native* multipage
+# mechanism would normally auto-discover and turn into its own sidebar.
+# We deliberately import them as plain modules instead and drive
+# navigation ourselves, so we keep the custom progress tracker and
+# step-gating below. Do not also rely on Streamlit's automatic
+# pages-folder sidebar - the two approaches conflict.
 PAGE_ORDER = [
-    ("📤 Upload", "upload", None),
-    ("📋 Review", "review", "extraction_complete"),
-    ("📊 Dashboard", "dashboard", "analysis_complete"),
-    ("📄 Report", "report", "analysis_complete"),
-    ("ℹ️ About", "about", None),
+    ("📤 Upload", "app.pages.1_upload", None),
+    ("📋 Review", "app.pages.2_review", "extraction_complete"),
+    ("📊 Dashboard", "app.pages.3_dashboard", "analysis_complete"),
+    ("📄 Report", "app.pages.4_report", "analysis_complete"),
+    ("ℹ️ About", "app.pages.5_about", None),
 ]
 
 
@@ -59,15 +72,16 @@ def init_session_state() -> None:
 
 
 def render_sidebar() -> str:
-    """Render the sidebar navigation. Returns the selected page's slug."""
+    """Render the sidebar navigation. Returns the module path of the
+    selected page."""
     with st.sidebar:
         st.title("🔬 ReproHub")
         st.caption(config.APP_DESCRIPTION)
         st.divider()
 
-        labels = [label for label, _slug, _req in PAGE_ORDER]
-        slugs = {label: slug for label, slug, _req in PAGE_ORDER}
-        requirements = {label: req for label, _slug, req in PAGE_ORDER}
+        labels = [label for label, _module, _req in PAGE_ORDER]
+        modules = {label: module for label, module, _req in PAGE_ORDER}
+        requirements = {label: req for label, _module, req in PAGE_ORDER}
 
         selected_label = st.radio(
             "Navigation",
@@ -122,16 +136,27 @@ def render_sidebar() -> str:
         st.divider()
         st.caption(f"v{config.APP_VERSION}")
 
-    return slugs[selected_label]
+    return modules[selected_label]
 
 
-def render_page(slug: str) -> None:
-    """Import and render the selected page, failing gracefully if it
-    isn't implemented yet or raises an error."""
+def render_page(module_path: str) -> None:
+    """Import and render the selected page module, failing gracefully if
+    it isn't implemented yet or raises an error.
+
+    Each page module under app/pages/ is expected to expose a render()
+    function, matching the convention used by the rest of the pipeline.
+    """
     try:
-        module = __import__(f"app.pages.{slug}", fromlist=["render"])
-    except ModuleNotFoundError:
-        st.info(f"The **{slug.title()}** page hasn't been built yet. Check back soon.")
+        module = importlib.import_module(module_path)
+    except ModuleNotFoundError as exc:
+        page_name = module_path.rsplit(".", 1)[-1]
+        st.info(f"The **{page_name}** page hasn't been built yet. Check back soon.")
+        if config.DEBUG:
+            st.caption(f"Import error detail: {exc}")
+        return
+
+    if not hasattr(module, "render"):
+        st.error(f"Page module `{module_path}` does not define a render() function.")
         return
 
     try:
@@ -159,11 +184,11 @@ def main() -> None:
     # Initialize session state
     init_session_state()
 
-    # Render sidebar and get selected page
-    selected_slug = render_sidebar()
+    # Render sidebar and get selected page module path
+    selected_module = render_sidebar()
 
     # Render the selected page
-    render_page(selected_slug)
+    render_page(selected_module)
 
 
 if __name__ == "__main__":
