@@ -75,6 +75,24 @@ body {
     min-height: 100vh;
 }
 
+/* Streamlit sets an explicit white background on its own top-level
+   wrapper (data-testid="stApp"), which paints over body regardless of
+   what body's background is set to. Without this rule, the dark theme
+   silently has no visible effect on the main app area - body's
+   background-color is real but it's covered. */
+[data-testid="stApp"] {
+    background-color: var(--background) !important;
+}
+
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"] {
+    background-color: transparent !important;
+}
+
+[data-testid="stHeader"] {
+    background-color: var(--background) !important;
+}
+
 /* Numeric/statistical output reads as a measurement readout, not body text */
 .stat-readout,
 [data-testid="stMetricValue"],
