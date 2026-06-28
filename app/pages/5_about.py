@@ -1,10 +1,9 @@
-
 """
 About Page — Help and Documentation
 """
 
 import streamlit as st
-from app.config import config
+from ..config import config
 
 
 def render():
