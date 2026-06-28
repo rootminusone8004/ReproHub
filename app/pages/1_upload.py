@@ -1,10 +1,22 @@
 """
-Upload Page — File Upload and Mock Extraction
+Upload Page — File Upload and Real Claim Extraction
+
+Wires the actual pipeline together:
+    utils.pdf_parser.extract_text_from_pdf   -> raw text from the PDF
+    core.extractor.extract_claims_from_paper -> regex-extracted claims (params empty)
+    core.matcher.match_all_claims            -> fuzzy-matches claim text to dataset columns
+
+No mock data - everything that lands in st.session_state.claims comes from
+the uploaded paper and dataset themselves.
 """
 
 import streamlit as st
 import pandas as pd
+
 from app.config import config
+from utils.pdf_parser import extract_text_from_pdf, PDFExtractionError
+from core.extractor import extract_claims_from_paper
+from core.matcher import match_all_claims
 
 
 def render():
@@ -41,45 +53,44 @@ def render():
     st.divider()
 
     if st.session_state.paper_file and st.session_state.dataset_df is not None:
-        if st.button("🔍 Extract Claims (Mock)", type="primary"):
-            with st.spinner("Extracting claims (using mock data)..."):
-                df = st.session_state.dataset_df
-                col_names = df.columns.tolist()
+        if st.button("🔍 Extract Claims", type="primary"):
+            with st.spinner("Reading PDF and extracting statistical claims..."):
+                # 1. Pull raw text out of the uploaded PDF.
+                try:
+                    paper_text = extract_text_from_pdf(st.session_state.paper_file)
+                except PDFExtractionError as exc:
+                    st.error(f"Couldn't read the PDF: {exc}")
+                    return
 
-                mock_claims = [
-                    {
-                        "id": "claim_1",
-                        "test_type": "t_test_independent",
-                        "claimed_p_value": 0.03,
-                        "claimed_effect_size": 0.45,
-                        "params": {
-                            "group_col": col_names[0],
-                            "value_col": col_names[1] if len(col_names) > 1 else col_names[0],
-                            "group1": str(df.iloc[0, 0]) if len(df) > 0 else "A",
-                            "group2": str(df.iloc[1, 0]) if len(df) > 1 else "B"
-                        },
-                        "claim_statement": "Treatment significantly improved scores compared to control",
-                        "source": "mock_extracted",
-                        "extraction_confidence": "high"
-                    },
-                    {
-                        "id": "claim_2",
-                        "test_type": "pearson_correlation",
-                        "claimed_p_value": 0.01,
-                        "claimed_effect_size": 0.60,
-                        "params": {
-                            "col1": col_names[0],
-                            "col2": col_names[1] if len(col_names) > 1 else col_names[0]
-                        },
-                        "claim_statement": "Age is positively correlated with scores",
-                        "source": "mock_extracted",
-                        "extraction_confidence": "medium"
-                    }
-                ]
+                st.session_state.paper_text = paper_text
 
-                st.session_state.claims = mock_claims
+                # 2. Regex-extract APA-style statistical claims from the text.
+                claims = extract_claims_from_paper(paper_text)
+
+                if not claims:
+                    st.warning(
+                        "No statistical claims were found in this PDF. "
+                        "ReproHub looks for conventional APA-style notation "
+                        "(e.g. `t(98) = 2.43, p = .03`) - papers that report "
+                        "results purely in prose won't be picked up automatically."
+                    )
+                    return
+
+                # 3. Fuzzy-match each claim's text against the dataset's
+                # columns to propose params (group_col, value_col, etc.).
+                claims = match_all_claims(claims, st.session_state.dataset_df)
+
+                st.session_state.claims = claims
                 st.session_state.extraction_complete = True
-                st.success(f"✅ Extracted {len(mock_claims)} mock claims from the paper!")
+
+                high_conf = sum(1 for c in claims if c.get("match_confidence") == "high")
+                st.success(f"✅ Extracted {len(claims)} claim(s) from the paper.")
+                if high_conf < len(claims):
+                    st.info(
+                        f"{high_conf}/{len(claims)} claim(s) had all dataset columns "
+                        "matched automatically. Review the rest on the next page before "
+                        "running verification."
+                    )
                 st.rerun()
     else:
         st.warning("Please upload both a paper (PDF) and a dataset (CSV) to continue.")
