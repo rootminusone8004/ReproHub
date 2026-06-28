@@ -1,1 +1,338 @@
+/* ========================================
+   ReproHub - Main Stylesheet
+   Dark theme with emerald green accents
+   ======================================== */
 
+/* ===== ROOT VARIABLES ===== */
+:root {
+    /* Colors */
+    --primary: #34D399;
+    --primary-dark: #059669;
+    --primary-light: #6EE7B7;
+    --primary-bg: rgba(52, 211, 153, 0.1);
+    
+    --background: #0F172A;
+    --background-light: #1E293B;
+    --background-dark: #020617;
+    
+    --text: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    
+    --border: #1E293B;
+    --border-light: #334155;
+    
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --info: #3B82F6;
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 4rem;
+    
+    /* Fonts */
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Border radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+/* ===== GLOBAL RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+[data-testid="stSidebar"] {
+    background-color: var(--background-dark) !important;
+    border-right: 1px solid var(--border) !important;
+}
+
+[data-testid="stSidebar"] h1 {
+    color: var(--primary) !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+}
+
+[data-testid="stSidebar"] h3 {
+    color: var(--text-secondary) !important;
+    font-size: 0.85rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ===== METRIC CARDS ===== */
+[data-testid="metric-container"] {
+    background-color: var(--background-light) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-md) !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-testid="metric-container"]:hover {
+    border-color: var(--primary) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+[data-testid="metric-container"] .metric-value {
+    color: var(--primary) !important;
+    font-family: var(--font-mono) !important;
+}
+
+[data-testid="metric-container"] .metric-label {
+    color: var(--text-secondary) !important;
+}
+
+/* ===== STATUS BADGES ===== */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+.status-reproduced {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--success);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-marginal {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-not-reproduced {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-could-not-verify {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-secondary);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* ===== BUTTONS ===== */
+.stButton > button {
+    background-color: var(--primary) !important;
+    color: var(--background-dark) !important;
+    font-weight: 600 !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.5rem 1.5rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.stButton > button:hover {
+    background-color: var(--primary-dark) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stButton > button:active {
+    transform: translateY(0);
+}
+
+/* Secondary button */
+.stButton > button[data-testid="baseButton-secondary"] {
+    background-color: var(--background-light) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+}
+
+.stButton > button[data-testid="baseButton-secondary"]:hover {
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+}
+
+/* ===== DATA FRAMES ===== */
+[data-testid="stDataFrame"] {
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    overflow: hidden !important;
+}
+
+[data-testid="stDataFrame"] thead th {
+    background-color: var(--background-dark) !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem !important;
+}
+
+[data-testid="stDataFrame"] tbody td {
+    padding: 0.5rem 0.75rem !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+
+/* ===== EXPANDERS ===== */
+.streamlit-expanderHeader {
+    background-color: var(--background-light) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    color: var(--text) !important;
+    font-weight: 600 !important;
+}
+
+.streamlit-expanderHeader:hover {
+    border-color: var(--primary) !important;
+}
+
+/* ===== TABS ===== */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 0.5rem;
+    border-bottom: 2px solid var(--border) !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    color: var(--text-secondary) !important;
+    font-weight: 500 !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    color: var(--primary) !important;
+    border-bottom: 2px solid var(--primary) !important;
+}
+
+/* ===== CODE BLOCKS ===== */
+.stCodeBlock {
+    background-color: var(--background-dark) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+}
+
+.stCodeBlock pre {
+    color: var(--text) !important;
+}
+
+/* ===== INFO/WARNING/ERROR BOXES ===== */
+.stAlert {
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--border) !important;
+}
+
+.stAlert[data-baseweb="notification"] {
+    background-color: var(--background-light) !important;
+}
+
+.stAlert .stMarkdown {
+    color: var(--text) !important;
+}
+
+/* ===== PROGRESS BAR ===== */
+.stProgress > div > div {
+    background-color: var(--primary) !important;
+}
+
+/* ===== FILE UPLOADER ===== */
+[data-testid="stFileUploader"] {
+    border: 2px dashed var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-lg) !important;
+    background-color: var(--background-dark) !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-testid="stFileUploader"]:hover {
+    border-color: var(--primary) !important;
+}
+
+[data-testid="stFileUploader"] .stButton button {
+    background-color: var(--primary) !important;
+    color: var(--background-dark) !important;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* ===== PLOTLY CHARTS ===== */
+.js-plotly-plot .plotly .main-svg {
+    background-color: transparent !important;
+}
+
+.js-plotly-plot .plotly .cartesianlayer {
+    background-color: transparent !important;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    [data-testid="stSidebar"] {
+        width: 100% !important;
+    }
+    
+    [data-testid="metric-container"] .metric-value {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* ===== UTILITY ===== */
+.text-mono {
+    font-family: var(--font-mono);
+}
+
+.text-primary {
+    color: var(--primary);
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.bg-dark {
+    background-color: var(--background-dark);
+}
+
+.border-primary {
+    border-color: var(--primary);
+}
+
+.shadow-glow {
+    box-shadow: 0 0 30px rgba(52, 211, 153, 0.1);
+}
