@@ -1,6 +1,6 @@
 # 📄 README.md — Copy & Paste
 
-```markdown
+markdown
 # 🔬 ReproHub
 
 ## Research Reproducibility Verification Platform
