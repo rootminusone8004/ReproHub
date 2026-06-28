@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-from app.config import config, ConfigError
+from config import config, ConfigError
 
 # Pages, in pipeline order, with the session-state flag (if any) required
 # to reach them, and the actual module path under app/pages/.
