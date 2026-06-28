@@ -101,7 +101,41 @@ body {
     letter-spacing: -0.01em;
 }
 
-/* ===== SIDEBAR ===== */
+/* ===== GLOBAL TEXT COLOR OVERRIDE =====
+   Streamlit sets an explicit `color` (its light-theme default,
+   rgb(49,51,63)) directly on almost every text-bearing element -
+   headings, captions, markdown containers, icons, labels - not just on
+   body. Because it's set explicitly per-element, body's color never
+   cascades down to them, so without this block nearly all text and
+   icons render as dark-gray-on-dark-background and are functionally
+   invisible. This is intentionally broad and high-specificity to win
+   against Streamlit's own inline-style-level rules. */
+[data-testid="stApp"] * {
+    color: var(--text);
+}
+
+/* Re-assert the muted/secondary tones for elements that should stay
+   visually de-emphasized, since the broad rule above would otherwise
+   make captions and labels the same brightness as primary text. */
+[data-testid="stCaptionContainer"],
+[data-testid="stCaptionContainer"] *,
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+    color: var(--text-secondary) !important;
+}
+
+/* Buttons keep their own dark-on-accent text - the global rule above
+   would otherwise make button labels the same pale color as the
+   button background, making them just as invisible as the bug this
+   fixes elsewhere. */
+.stButton > button,
+.stButton > button * {
+    color: var(--background-dark) !important;
+}
+
+.stButton > button[data-testid="baseButton-secondary"],
+.stButton > button[data-testid="baseButton-secondary"] * {
+    color: var(--text) !important;
+}
 [data-testid="stSidebar"] {
     background-color: var(--background-dark) !important;
     border-right: 1px solid var(--border) !important;
@@ -151,6 +185,15 @@ body {
     font-size: 0.72rem !important;
     text-transform: uppercase;
     letter-spacing: 0.06em;
+}
+
+/* Metric delta (e.g. "+3") sits on its own tinted green/red background
+   supplied by Streamlit - give it matching, readable foreground colors
+   instead of inheriting the global pale text color meant for dark
+   backgrounds. */
+[data-testid="stMetricDelta"],
+[data-testid="stMetricDelta"] * {
+    color: var(--text) !important;
 }
 
 /* ===== STATUS BADGES =====
@@ -322,7 +365,36 @@ body {
     background-color: var(--accent) !important;
 }
 
-/* ===== FILE UPLOADER ===== */
+/* ===== SELECT / DROPDOWN / INPUT FIELDS =====
+   Streamlit's BaseWeb-derived inputs (selectbox, multiselect, text
+   input, number input) default to a light background regardless of
+   the page theme, which combined with the global text-color override
+   above would otherwise produce light-text-on-light-background -
+   invisible in the opposite direction from the bug it fixes elsewhere. */
+[data-testid="stSelectbox"] [data-baseweb="select"] > div,
+[data-testid="stMultiSelect"] [data-baseweb="select"] > div,
+[data-testid="stTextInput"] input,
+[data-testid="stNumberInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-baseweb="input"],
+[data-baseweb="textarea"] {
+    background-color: var(--surface-raised) !important;
+    color: var(--text) !important;
+    border-color: var(--border-light) !important;
+}
+
+/* Dropdown menu popovers (the list that appears on click) render in a
+   portal outside the normal app container, so they need their own
+   explicit dark styling - they don't inherit anything from stApp. */
+[data-baseweb="popover"] [data-baseweb="menu"],
+[data-baseweb="popover"] li {
+    background-color: var(--surface-raised) !important;
+    color: var(--text) !important;
+}
+
+[data-baseweb="popover"] li:hover {
+    background-color: var(--background-light) !important;
+}
 [data-testid="stFileUploader"] {
     border: 1px dashed var(--border-light) !important;
     border-radius: var(--radius-md) !important;
@@ -338,6 +410,28 @@ body {
 [data-testid="stFileUploader"] .stButton button {
     background-color: var(--accent) !important;
     color: var(--background-dark) !important;
+}
+
+/* The dropzone's inner instructions/button panel keeps Streamlit's own
+   light background by default - restyle it to match the theme instead
+   of leaving pale text stranded on a white panel. */
+[data-testid="stFileUploaderDropzone"] {
+    background-color: var(--background-dark) !important;
+}
+
+[data-testid="stFileUploaderDropzoneInstructions"],
+[data-testid="stFileUploaderDropzoneInstructions"] * {
+    color: var(--text-secondary) !important;
+}
+
+[data-testid="stBaseButton-secondary"]:has([data-testid="stFileUploaderDropzone"] *) {
+    background-color: var(--surface-raised) !important;
+}
+
+[data-testid="stFileUploaderDropzone"] button {
+    background-color: var(--surface-raised) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border-light) !important;
 }
 
 /* ===== SCROLLBAR ===== */
