@@ -1,10 +1,6 @@
-"""
-Upload Page — File Upload and Mock Extraction
-"""
-
 import streamlit as st
 import pandas as pd
-from app.config import config
+from ..config import config
 
 
 def render():
