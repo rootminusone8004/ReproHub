@@ -3,6 +3,7 @@ About Page — Help and Documentation
 """
 
 import streamlit as st
+from datetime import datetime
 from app.config import config
 
 
@@ -38,4 +39,4 @@ def render():
     """)
 
     st.divider()
-    st.caption(f"© 2024 {config.__author__} · MIT License")
+    st.caption(f"© {datetime.now().year} Junaid Ahmed Rupok · MIT License")
