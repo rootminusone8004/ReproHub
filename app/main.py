@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '/mount/src/reprohub')
+
 """
 ReproHub - Main Application Entry Point
 Streamlit web application for research reproducibility verification.
@@ -17,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-from config import config, ConfigError
+from app.config import config, ConfigError
 
 # Pages, in pipeline order, with the session-state flag (if any) required
 # to reach them, and the actual module path under app/pages/.
