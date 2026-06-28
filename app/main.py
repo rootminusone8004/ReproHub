@@ -174,8 +174,9 @@ def main() -> None:
 
     # Fail fast and visibly if required config (e.g. OPENAI_API_KEY,
     # AI_MODEL) is missing, instead of crashing later inside extraction.
+    # Set require_ai=False since we're using mock data
     try:
-        config.validate(require_ai=True)
+        config.validate(require_ai=False)
     except ConfigError as exc:
         st.error("ReproHub is misconfigured and cannot start safely.")
         st.code(str(exc))
