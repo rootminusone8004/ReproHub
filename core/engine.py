@@ -13,6 +13,9 @@ from typing import Dict, Any, Optional
 import pandas as pd
 import numpy as np
 from scipy import stats
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder
+import statsmodels.api as sm
 
 
 class EngineError(Exception):
@@ -30,6 +33,10 @@ class StatisticalTestEngine:
         "spearman_correlation",
         "chi_square",
         "mann_whitney_u",
+        "kruskal_wallis",
+        "wilcoxon_signed_rank",
+        "linear_regression",
+        "logistic_regression",
     }
 
     def __init__(self, data: Optional[pd.DataFrame]):
@@ -106,12 +113,8 @@ class StatisticalTestEngine:
         if len(a) < 2 or len(b) < 2:
             raise EngineError("Each group needs at least 2 observations for a t-test.")
 
-        # Shapiro-Wilk normality check (informational - doesn't block the
-        # test, since real papers rarely meet normality perfectly either).
         normal_a = stats.shapiro(a).pvalue > 0.05 if len(a) >= 3 else None
         normal_b = stats.shapiro(b).pvalue > 0.05 if len(b) >= 3 else None
-        # Levene's test for equal variances - determines whether to use
-        # Welch's correction.
         equal_var = stats.levene(a, b).pvalue > 0.05
 
         result = stats.ttest_ind(a, b, equal_var=equal_var)
@@ -168,7 +171,6 @@ class StatisticalTestEngine:
 
         result = stats.f_oneway(*groups)
 
-        # Eta-squared effect size: SS_between / SS_total.
         grand_mean = sub[value_col].mean()
         ss_between = sum(len(g) * (g.mean() - grand_mean) ** 2 for g in groups)
         ss_total = ((sub[value_col] - grand_mean) ** 2).sum()
@@ -240,7 +242,6 @@ class StatisticalTestEngine:
 
         chi2, p, dof, expected = stats.chi2_contingency(contingency)
 
-        # Cramer's V effect size.
         n = contingency.values.sum()
         min_dim = min(contingency.shape) - 1
         cramers_v = np.sqrt(chi2 / (n * min_dim)) if min_dim > 0 and n > 0 else 0.0
@@ -279,10 +280,178 @@ class StatisticalTestEngine:
 
         result = stats.mannwhitneyu(a, b, alternative="two-sided")
 
+        # Rank-biserial correlation as effect size for Mann-Whitney U.
+        n_a, n_b = len(a), len(b)
+        r_rb = 1 - (2 * result.statistic) / (n_a * n_b)
+
         return {
             "test_type": "mann_whitney_u",
             "statistic": float(result.statistic),
             "p_value": float(result.pvalue),
-            "effect_size": None,
-            "n": int(len(a) + len(b)),
+            "effect_size": {"type": "rank_biserial_r", "value": float(r_rb)},
+            "n": int(n_a + n_b),
+        }
+
+    def _run_kruskal_wallis(self, params: dict) -> dict:
+        group_col, value_col = params.get("group_col"), params.get("value_col")
+        if not group_col or not value_col:
+            raise EngineError("kruskal_wallis requires 'group_col' and 'value_col'.")
+        self._require_columns(group_col, value_col)
+
+        sub = self.data[[group_col, value_col]].dropna()
+        sub[value_col] = pd.to_numeric(sub[value_col], errors="coerce")
+        sub = sub.dropna()
+        groups = [g[value_col].values for _, g in sub.groupby(group_col) if len(g) >= 2]
+        if len(groups) < 2:
+            raise EngineError("kruskal_wallis requires at least 2 groups with 2+ observations each.")
+
+        result = stats.kruskal(*groups)
+
+        # Eta-squared approximation for Kruskal-Wallis.
+        n_total = sum(len(g) for g in groups)
+        k = len(groups)
+        eta_sq = (result.statistic - k + 1) / (n_total - k) if n_total > k else 0.0
+
+        return {
+            "test_type": "kruskal_wallis",
+            "statistic": float(result.statistic),
+            "p_value": float(result.pvalue),
+            "effect_size": {"type": "eta_squared", "value": float(max(eta_sq, 0.0))},
+            "n": int(n_total),
+        }
+
+    def _run_wilcoxon_signed_rank(self, params: dict) -> dict:
+        col1, col2 = params.get("col1"), params.get("col2")
+        if not col1 or not col2:
+            raise EngineError("wilcoxon_signed_rank requires 'col1' and 'col2'.")
+        self._require_columns(col1, col2)
+
+        sub = self.data[[col1, col2]].apply(pd.to_numeric, errors="coerce").dropna()
+        if len(sub) < 10:
+            raise EngineError("wilcoxon_signed_rank requires at least 10 paired observations.")
+
+        diffs = sub[col1] - sub[col2]
+        # Drop zero differences (Wilcoxon requires non-zero differences).
+        diffs = diffs[diffs != 0]
+        if len(diffs) < 1:
+            raise EngineError("All differences are zero — Wilcoxon test cannot be run.")
+
+        result = stats.wilcoxon(diffs)
+
+        # Rank-biserial correlation as effect size.
+        n = len(diffs)
+        r_rb = result.statistic / (n * (n + 1) / 2)
+
+        return {
+            "test_type": "wilcoxon_signed_rank",
+            "statistic": float(result.statistic),
+            "p_value": float(result.pvalue),
+            "effect_size": {"type": "rank_biserial_r", "value": float(r_rb)},
+            "n": int(n),
+        }
+
+    def _run_linear_regression(self, params: dict) -> dict:
+        dependent_col = params.get("dependent_col")
+        independent_cols = params.get("independent_cols")
+        if not dependent_col or not independent_cols:
+            raise EngineError(
+                "linear_regression requires 'dependent_col' (str) and "
+                "'independent_cols' (list of str)."
+            )
+        if isinstance(independent_cols, str):
+            independent_cols = [independent_cols]
+
+        all_cols = [dependent_col] + independent_cols
+        self._require_columns(*all_cols)
+
+        sub = self.data[all_cols].apply(pd.to_numeric, errors="coerce").dropna()
+        if len(sub) < len(independent_cols) + 2:
+            raise EngineError(
+                f"linear_regression needs at least {len(independent_cols) + 2} "
+                "complete observations."
+            )
+
+        y = sub[dependent_col]
+        X = sm.add_constant(sub[independent_cols])
+        model = sm.OLS(y, X).fit()
+
+        return {
+            "test_type": "linear_regression",
+            "statistic": float(model.fvalue),          # F-statistic for model fit
+            "p_value": float(model.f_pvalue),           # Overall model p-value
+            "effect_size": {"type": "r_squared", "value": float(model.rsquared)},
+            "n": int(len(sub)),
+            "details": {
+                "r_squared": float(model.rsquared),
+                "adj_r_squared": float(model.rsquared_adj),
+                "coefficients": {
+                    col: float(coef)
+                    for col, coef in zip(X.columns, model.params)
+                },
+                "coef_p_values": {
+                    col: float(pv)
+                    for col, pv in zip(X.columns, model.pvalues)
+                },
+            },
+        }
+
+    def _run_logistic_regression(self, params: dict) -> dict:
+        dependent_col = params.get("dependent_col")
+        independent_cols = params.get("independent_cols")
+        if not dependent_col or not independent_cols:
+            raise EngineError(
+                "logistic_regression requires 'dependent_col' (str) and "
+                "'independent_cols' (list of str)."
+            )
+        if isinstance(independent_cols, str):
+            independent_cols = [independent_cols]
+
+        all_cols = [dependent_col] + independent_cols
+        self._require_columns(*all_cols)
+
+        sub = self.data[all_cols].dropna().copy()
+        for col in independent_cols:
+            sub[col] = pd.to_numeric(sub[col], errors="coerce")
+        sub = sub.dropna()
+
+        if len(sub) < len(independent_cols) + 2:
+            raise EngineError(
+                f"logistic_regression needs at least {len(independent_cols) + 2} "
+                "complete observations."
+            )
+
+        # Encode the outcome to 0/1 if it isn't already numeric binary.
+        y_raw = sub[dependent_col]
+        if not pd.api.types.is_numeric_dtype(y_raw) or set(y_raw.unique()) - {0, 1}:
+            le = LabelEncoder()
+            y = le.fit_transform(y_raw)
+        else:
+            y = y_raw.values
+
+        X = sub[independent_cols].values
+
+        # statsmodels Logit for p-values and pseudo-R².
+        X_sm = sm.add_constant(X)
+        try:
+            logit_model = sm.Logit(y, X_sm).fit(disp=0, maxiter=200)
+            p_value = float(logit_model.llr_pvalue)   # Likelihood-ratio test p-value
+            statistic = float(logit_model.llr)         # LR chi-square statistic
+            mcfadden_r2 = float(logit_model.prsquared) # McFadden pseudo-R²
+            coef_pvalues = {
+                independent_cols[i]: float(logit_model.pvalues[i + 1])
+                for i in range(len(independent_cols))
+            }
+        except Exception as exc:
+            raise EngineError(f"Logistic regression failed to converge: {exc}") from exc
+
+        return {
+            "test_type": "logistic_regression",
+            "statistic": statistic,
+            "p_value": p_value,
+            "effect_size": {"type": "mcfadden_r2", "value": mcfadden_r2},
+            "n": int(len(sub)),
+            "details": {
+                "mcfadden_r2": mcfadden_r2,
+                "coef_p_values": coef_pvalues,
+            },
         }
