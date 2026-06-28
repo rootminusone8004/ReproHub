@@ -81,6 +81,55 @@ _EFFECT_PATTERNS: Dict[str, "re.Pattern[str]"] = {
 # it picks up an unrelated effect size from the next sentence.
 _EFFECT_SIZE_WINDOW = 60
 
+# How far to search outward from a matched statistic when building its
+# claim_statement, in characters. This is a search radius, not a fixed
+# output width - the actual output is clipped to the nearest sentence
+# boundary within this radius (see _extract_sentence_context), so most
+# claim statements end up much shorter than this.
+_CONTEXT_SEARCH_RADIUS = 300
+
+# How many sentences before the one containing the match to include.
+# The variable being measured is often named in the sentence just
+# before the one reporting the statistic (e.g. "...treatment and
+# control groups. Results showed t(88) = 2.1, p = 0.03."), so 1
+# sentence of lookback meaningfully helps core/matcher.py's fuzzy
+# column matching without pulling in unrelated context from further
+# back in the paragraph.
+_LOOKBACK_SENTENCES = 1
+
+
+def _extract_sentence_context(text: str, match_start: int, match_end: int) -> str:
+    """
+    Build a claim_statement by expanding outward from a matched
+    statistic to the nearest sentence boundaries, including a small
+    number of preceding sentences.
+
+    A fixed character-count window (the previous approach) risks
+    cutting off mid-word/mid-clause, which can silently remove the very
+    variable name core/matcher.py needs to fuzzy-match against dataset
+    columns. Expanding to sentence boundaries instead keeps whole
+    clauses intact, at the cost of variable-length output - callers
+    should not assume a fixed length.
+    """
+    search_start = max(0, match_start - _CONTEXT_SEARCH_RADIUS)
+    preceding = text[search_start:match_start]
+    boundary_matches = list(re.finditer(r"[.!?]\s+", preceding))
+
+    if len(boundary_matches) > _LOOKBACK_SENTENCES:
+        sentence_start = search_start + boundary_matches[-(_LOOKBACK_SENTENCES + 1)].end()
+    else:
+        # Fewer sentence boundaries available than requested lookback -
+        # just use everything back to the search radius (or start of text).
+        sentence_start = search_start
+
+    search_end = min(len(text), match_end + _CONTEXT_SEARCH_RADIUS)
+    following = text[match_end:search_end]
+    boundary_match = re.search(r"[.!?](?:\s|$)", following)
+    sentence_end = match_end + boundary_match.end() if boundary_match else search_end
+
+    raw_context = text[sentence_start:sentence_end]
+    return " ".join(raw_context.split())
+
 
 def _find_effect_size(text: str, search_start: int) -> Optional[float]:
     """Look for an effect-size value shortly after a statistic match."""
@@ -132,14 +181,7 @@ def extract_claims_from_paper(paper_text: str) -> List[Dict[str, Any]]:
 
             effect_size = _find_effect_size(paper_text, match.end())
 
-            # Use a short surrounding window of the original text as the
-            # human-readable claim statement, so a person reviewing this
-            # on the Review page can see where it came from. Trimmed and
-            # collapsed to single-line for readability in the UI.
-            context_start = max(0, match.start() - 80)
-            context_end = min(len(paper_text), match.end() + 20)
-            raw_context = paper_text[context_start:context_end]
-            claim_statement = " ".join(raw_context.split())
+            claim_statement = _extract_sentence_context(paper_text, match.start(), match.end())
 
             claims.append({
                 "id": f"claim_{claim_counter}",
