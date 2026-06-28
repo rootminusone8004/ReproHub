@@ -23,21 +23,13 @@ st.set_page_config(
 from app.config import config, ConfigError
 
 # Pages, in pipeline order, with the session-state flag (if any) required
-# to reach them, and the actual module path under app/pages/.
-#
-# Note: these files use Streamlit's numbered-prefix naming convention
-# (1_upload.py, 2_review.py, ...), which Streamlit's *native* multipage
-# mechanism would normally auto-discover and turn into its own sidebar.
-# We deliberately import them as plain modules instead and drive
-# navigation ourselves, so we keep the custom progress tracker and
-# step-gating below. Do not also rely on Streamlit's automatic
-# pages-folder sidebar - the two approaches conflict.
+# to reach them, and the actual module path under pages/.
 PAGE_ORDER = [
-    ("📤 Upload", "app.pages.1_upload", None),
-    ("📋 Review", "app.pages.2_review", "extraction_complete"),
-    ("📊 Dashboard", "app.pages.3_dashboard", "analysis_complete"),
-    ("📄 Report", "app.pages.4_report", "analysis_complete"),
-    ("ℹ️ About", "app.pages.5_about", None),
+    ("📤 Upload", "pages.1_upload", None),
+    ("📋 Review", "pages.2_review", "extraction_complete"),
+    ("📊 Dashboard", "pages.3_dashboard", "analysis_complete"),
+    ("📄 Report", "pages.4_report", "analysis_complete"),
+    ("ℹ️ About", "pages.5_about", None),
 ]
 
 
@@ -144,11 +136,7 @@ def render_sidebar() -> str:
 
 def render_page(module_path: str) -> None:
     """Import and render the selected page module, failing gracefully if
-    it isn't implemented yet or raises an error.
-
-    Each page module under app/pages/ is expected to expose a render()
-    function, matching the convention used by the rest of the pipeline.
-    """
+    it isn't implemented yet or raises an error."""
     try:
         module = importlib.import_module(module_path)
     except ModuleNotFoundError as exc:
@@ -172,12 +160,8 @@ def render_page(module_path: str) -> None:
 
 def main() -> None:
     """Main application entry point."""
-    # Ensure directories exist
     config.ensure_directories()
 
-    # Fail fast and visibly if required config (e.g. OPENAI_API_KEY,
-    # AI_MODEL) is missing, instead of crashing later inside extraction.
-    # Set require_ai=False since we're using mock data
     try:
         config.validate(require_ai=False)
     except ConfigError as exc:
@@ -185,13 +169,8 @@ def main() -> None:
         st.code(str(exc))
         st.stop()
 
-    # Initialize session state
     init_session_state()
-
-    # Render sidebar and get selected page module path
     selected_module = render_sidebar()
-
-    # Render the selected page
     render_page(selected_module)
 
 
