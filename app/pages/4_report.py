@@ -488,7 +488,7 @@ html, body, [class*="css"] {
 [data-testid="stCheckbox"] { margin: 0 !important; }
 [data-testid="stCheckbox"] label { cursor: pointer !important; }
 
-/* ── Score Preview ── */
+/* ── Score Preview Panel ── */
 .score-preview-panel {
     padding: 28px 24px 24px;
     display: flex;
@@ -531,33 +531,27 @@ html, body, [class*="css"] {
     margin-top: 4px;
 }
 
-/* ── Stat Grid ── */
-.stat-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    width: 100%;
-    margin-top: 24px;
+/* ── Native Metric Override ── */
+[data-testid="stMetric"] {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 12px !important;
+    padding: 14px 10px !important;
+    text-align: center !important;
+    backdrop-filter: blur(4px) !important;
 }
-.stat-pill {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 14px 10px;
-    text-align: center;
+[data-testid="stMetric"] .stMetricValue {
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    padding: 0 !important;
 }
-.stat-pill-num {
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1;
-}
-.stat-pill-lbl {
-    font-size: 10px;
-    color: #64748B;
-    margin-top: 3px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 500;
+[data-testid="stMetric"] .stMetricLabel {
+    font-size: 10px !important;
+    color: #64748B !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
 }
 
 /* ── Legend ── */
@@ -827,15 +821,15 @@ def render():
             # Stats Grid (Using Native Streamlit Metrics to avoid HTML escaping)
             col1, col2 = st.columns(2)
             with col1:
-                st.metric(label="Reproduced", value=counts['reproduced'], label_visibility="visible")
+                st.metric(label="Reproduced", value=counts['reproduced'], delta=None)
             with col2:
-                st.metric(label="Marginal", value=counts['marginal'], label_visibility="visible")
+                st.metric(label="Marginal", value=counts['marginal'], delta=None)
             
             col3, col4 = st.columns(2)
             with col3:
-                st.metric(label="Not Reproduced", value=counts['not_reproduced'], label_visibility="visible")
+                st.metric(label="Not Reproduced", value=counts['not_reproduced'], delta=None)
             with col4:
-                st.metric(label="Unverifiable", value=counts['could_not_verify'], label_visibility="visible")
+                st.metric(label="Unverifiable", value=counts['could_not_verify'], delta=None)
 
             # Footer Meta
             st.markdown(f"""
