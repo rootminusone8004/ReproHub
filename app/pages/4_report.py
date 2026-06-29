@@ -811,41 +811,41 @@ def render():
 
     # ── RIGHT: Score Preview ──────────────────────────────────────────────────
     with col_preview:
-        ring_svg = _score_ring_svg(score)
-
-        st.markdown(f"""
-        <div class="glass-panel score-preview-panel">
+        with st.container():
+            st.markdown('<div class="glass-panel score-preview-panel">', unsafe_allow_html=True)
+            
+            # Ring Chart
+            ring_svg = _score_ring_svg(score)
+            st.markdown(f"""
             <div class="ring-container">
                 {ring_svg}
                 <div class="ring-score-text">{score}%</div>
             </div>
             <div class="score-label-text">Reproducibility Score</div>
+            """, unsafe_allow_html=True)
 
-            <div class="stat-grid">
-                <div class="stat-pill">
-                    <div class="stat-pill-num" style="color:#10B981">{counts['reproduced']}</div>
-                    <div class="stat-pill-lbl">Reproduced</div>
-                </div>
-                <div class="stat-pill">
-                    <div class="stat-pill-num" style="color:#F59E0B">{counts['marginal']}</div>
-                    <div class="stat-pill-lbl">Marginal</div>
-                </div>
-                <div class="stat-pill">
-                    <div class="stat-pill-num" style="color:#EF4444">{counts['not_reproduced']}</div>
-                    <div class="stat-pill-lbl">Not Reproduced</div>
-                </div>
-                <div class="stat-pill">
-                    <div class="stat-pill-num" style="color:#8B95A9">{counts['could_not_verify']}</div>
-                    <div class="stat-pill-lbl">Unverifiable</div>
-                </div>
-            </div>
+            # Stats Grid (Using Native Streamlit Metrics to avoid HTML escaping)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric(label="Reproduced", value=counts['reproduced'], label_visibility="visible")
+            with col2:
+                st.metric(label="Marginal", value=counts['marginal'], label_visibility="visible")
             
+            col3, col4 = st.columns(2)
+            with col3:
+                st.metric(label="Not Reproduced", value=counts['not_reproduced'], label_visibility="visible")
+            with col4:
+                st.metric(label="Unverifiable", value=counts['could_not_verify'], label_visibility="visible")
+
+            # Footer Meta
+            st.markdown(f"""
             <div class="meta-text">
                 {total} claim{"s" if total != 1 else ""} examined &nbsp;·&nbsp;
                 {datetime.now().strftime('%Y-%m-%d %H:%M')}
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Footer Action Buttons ─────────────────────────────────────────────────
     st.markdown('<div class="rh-divider"></div>', unsafe_allow_html=True)
