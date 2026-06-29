@@ -40,13 +40,13 @@ _CATEGORY_LABEL = {"parametric": "Parametric", "nonparametric": "Non-parametric"
 
 def _test_card(test_type: str) -> str:
     name, category, effect = _TEST_META[test_type]
-    return f"""
-    <div class="rh-test-card rh-test-{category}">
-        <div class="rh-category-tag">{_CATEGORY_LABEL[category]}</div>
-        <div class="rh-test-name">{name}</div>
-        <div class="rh-test-effect">Effect size: {effect}</div>
-    </div>
-    """
+    return (
+        '<div class="rh-test-card rh-test-' + category + '">'
+        + '<div class="rh-category-tag">' + _CATEGORY_LABEL[category] + "</div>"
+        + '<div class="rh-test-name">' + name + "</div>"
+        + '<div class="rh-test-effect">Effect size: ' + effect + "</div>"
+        + "</div>"
+    )
 
 
 def render():
@@ -56,42 +56,40 @@ def render():
         # Surfaced visibly rather than silently skipped, so a newly
         # added engine test is impossible to forget about here.
         st.warning(
-            f"⚠️ Engine supports test(s) with no display metadata configured: "
-            f"{sorted(missing_meta)}. Add them to _TEST_META in this file.",
+            "⚠️ Engine supports test(s) with no display metadata configured: "
+            + str(sorted(missing_meta))
+            + ". Add them to _TEST_META in this file."
         )
 
-    # ---- Hero -----------------------------------------------------
+    # ---- Hero ---------------------------------------------------------
+    pills = (
+        '<span class="rh-pill">v' + config.APP_VERSION + "</span>"
+        + '<span class="rh-pill">MIT License</span>'
+        + '<span class="rh-pill">' + str(len(supported)) + " statistical tests</span>"
+        + '<span class="rh-pill">No API keys required</span>"'
+    )
     st.markdown(
-        f"""
-        <div class="rh-hero">
-            <div class="rh-hero-icon">🔬</div>
-            <div>
-                <p class="rh-hero-title">{config.APP_NAME}</p>
-                <p class="rh-hero-tagline">{config.APP_DESCRIPTION}</p>
-                <div class="rh-meta-row">
-                    <span class="rh-pill">v{config.APP_VERSION}</span>
-                    <span class="rh-pill">MIT License</span>
-                    <span class="rh-pill">{len(supported)} statistical tests</span>
-                    <span class="rh-pill">No API keys required</span>
-                </div>
-            </div>
-        </div>
-        """,
+        '<div class="rh-hero">'
+        + '<div class="rh-hero-icon">🔬</div>'
+        + "<div>"
+        + '<p class="rh-hero-title">' + config.APP_NAME + "</p>"
+        + '<p class="rh-hero-tagline">' + config.APP_DESCRIPTION + "</p>"
+        + '<div class="rh-meta-row">' + pills + "</div>"
+        + "</div>"
+        + "</div>",
         unsafe_allow_html=True,
     )
 
-    # ---- Mission ----------------------------------------------------
+    # ---- Mission ------------------------------------------------------
     st.markdown('<div class="rh-section-label">Why it exists</div>', unsafe_allow_html=True)
     st.markdown(
-        """
-        <div class="rh-card">
-        Most published statistical claims are never independently re-checked against
-        the underlying data. <strong>ReproHub</strong> closes that gap: upload a paper
-        and its dataset, and it re-runs every reported test from scratch with
-        SciPy/statsmodels, then scores how well each claim holds up against the raw
-        numbers — no manual spreadsheet work, no guesswork.
-        </div>
-        """,
+        '<div class="rh-card">'
+        "Most published statistical claims are never independently re-checked against "
+        "the underlying data. <strong>ReproHub</strong> closes that gap: upload a paper "
+        "and its dataset, and it re-runs every reported test from scratch with "
+        "SciPy/statsmodels, then scores how well each claim holds up against the raw "
+        "numbers — no manual spreadsheet work, no guesswork."
+        "</div>",
         unsafe_allow_html=True,
     )
 
@@ -99,45 +97,65 @@ def render():
     st.markdown('<div class="rh-section-label">How it works</div>', unsafe_allow_html=True)
     steps = [
         ("📄", "Upload", "Provide the research paper (PDF) and its dataset (CSV or Excel)."),
-        ("📋", "Extract & review", "Claims are pulled from APA-style notation and fuzzy-matched to dataset columns — confirm or fix mappings before verifying."),
-        ("🔬", "Verify", "Each claim's test is re-run for real against your data, then scored with composite scoring (not just a p-value check)."),
-        ("📊", "Dashboard", "See per-claim verdicts, discrepancies, and the weakest component behind any failure."),
-        ("📄", "Report", "Export a shareable reproducibility report with the full breakdown."),
+        (
+            "📋",
+            "Extract &amp; review",
+            "Claims are pulled from APA-style notation and fuzzy-matched to dataset columns"
+            " — confirm or fix mappings before verifying.",
+        ),
+        (
+            "🔬",
+            "Verify",
+            "Each claim's test is re-run for real against your data, then scored with"
+            " composite scoring (not just a p-value check).",
+        ),
+        (
+            "📊",
+            "Dashboard",
+            "See per-claim verdicts, discrepancies, and the weakest component behind any failure.",
+        ),
+        (
+            "📄",
+            "Report",
+            "Export a shareable reproducibility report with the full breakdown.",
+        ),
     ]
-    step_html = "".join(
-        f"""
-        <div class="rh-step">
-            <div class="rh-step-number">{i}</div>
-            <div>
-                <div class="rh-step-title">{icon} {title}</div>
-                <div class="rh-step-desc">{desc}</div>
-            </div>
-        </div>
-        """
-        for i, (icon, title, desc) in enumerate(steps, start=1)
+
+    step_items = ""
+    for i, (icon, title, desc) in enumerate(steps, start=1):
+        step_items += (
+            '<div class="rh-step">'
+            + '<div class="rh-step-number">' + str(i) + "</div>"
+            + "<div>"
+            + '<div class="rh-step-title">' + icon + " " + title + "</div>"
+            + '<div class="rh-step-desc">' + desc + "</div>"
+            + "</div>"
+            + "</div>"
+        )
+
+    st.markdown(
+        '<div class="rh-card">' + step_items + "</div>",
+        unsafe_allow_html=True,
     )
-    st.markdown(f'<div class="rh-card">{step_html}</div>', unsafe_allow_html=True)
 
     # ---- Scoring methodology -----------------------------------------
     st.markdown('<div class="rh-section-label">How scoring works</div>', unsafe_allow_html=True)
     st.markdown(
-        """
-        <div class="rh-card">
-        <p style="color: var(--text-secondary); margin-bottom: 0.3rem;">
-        Composite score — weighs three components together, rather than a bare p-value match:
-        </p>
-        <div class="rh-weight-bar">
-            <div class="rh-weight-segment-p" style="width:50%"></div>
-            <div class="rh-weight-segment-es" style="width:30%"></div>
-            <div class="rh-weight-segment-st" style="width:20%"></div>
-        </div>
-        <div class="rh-legend">
-            <span><span class="rh-legend-dot" style="background:var(--accent)"></span>p-value agreement — 50%</span>
-            <span><span class="rh-legend-dot" style="background:var(--signal-verified)"></span>effect size agreement — 30%</span>
-            <span><span class="rh-legend-dot" style="background:var(--signal-marginal)"></span>test statistic agreement — 20%</span>
-        </div>
-        </div>
-        """,
+        '<div class="rh-card">'
+        '<p style="color: var(--text-secondary); margin-bottom: 0.3rem;">'
+        "Composite score — weighs three components together, rather than a bare p-value match:"
+        "</p>"
+        '<div class="rh-weight-bar">'
+        '<div class="rh-weight-segment-p" style="width:50%"></div>'
+        '<div class="rh-weight-segment-es" style="width:30%"></div>'
+        '<div class="rh-weight-segment-st" style="width:20%"></div>'
+        "</div>"
+        '<div class="rh-legend">'
+        '<span><span class="rh-legend-dot" style="background:var(--accent)"></span>p-value agreement — 50%</span>'
+        '<span><span class="rh-legend-dot" style="background:var(--signal-verified)"></span>effect size agreement — 30%</span>'
+        '<span><span class="rh-legend-dot" style="background:var(--signal-marginal)"></span>test statistic agreement — 20%</span>'
+        "</div>"
+        "</div>",
         unsafe_allow_html=True,
     )
 
@@ -146,46 +164,59 @@ def render():
     badges = [
         ("status-reproduced", "Reproduced", "score ≥ 0.80"),
         ("status-marginal", "Marginal", "score ≥ 0.55"),
-        ("status-not-reproduced", "Not reproduced", "score < 0.55"),
-        ("status-could-not-verify", "Could not verify", "test couldn't be run"),
+        ("status-not-reproduced", "Not reproduced", "score &lt; 0.55"),
+        ("status-could-not-verify", "Could not verify", "test couldn&#39;t be run"),
     ]
-    badge_html = "".join(
-        f"""
-        <div class="rh-card" style="display:flex; align-items:center; justify-content:space-between; gap: 0.75rem;">
-            <span class="status-badge {cls}">{label}</span>
-            <span class="rh-test-effect">{meaning}</span>
-        </div>
-        """
-        for cls, label, meaning in badges
+
+    badge_items = ""
+    for cls, label, meaning in badges:
+        badge_items += (
+            '<div class="rh-card" style="display:flex; align-items:center;'
+            ' justify-content:space-between; gap: 0.75rem;">'
+            + '<span class="status-badge ' + cls + '">' + label + "</span>"
+            + '<span class="rh-test-effect">' + meaning + "</span>"
+            + "</div>"
+        )
+
+    st.markdown(
+        '<div class="rh-grid">' + badge_items + "</div>",
+        unsafe_allow_html=True,
     )
-    st.markdown(f'<div class="rh-grid">{badge_html}</div>', unsafe_allow_html=True)
 
-    # ---- Supported tests ----------------------------------------------
-    st.markdown('<div class="rh-section-label">Supported statistical tests</div>', unsafe_allow_html=True)
+    # ---- Supported tests ---------------------------------------------
+    st.markdown(
+        '<div class="rh-section-label">Supported statistical tests</div>',
+        unsafe_allow_html=True,
+    )
     cards = "".join(_test_card(t) for t in sorted(supported) if t in _TEST_META)
-    st.markdown(f'<div class="rh-grid">{cards}</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="rh-grid">' + cards + "</div>",
+        unsafe_allow_html=True,
+    )
 
-    # ---- Tech stack -----------------------------------------------------
+    # ---- Tech stack --------------------------------------------------
     st.markdown('<div class="rh-section-label">Built with</div>', unsafe_allow_html=True)
     tech = [
         "Streamlit", "SciPy", "statsmodels", "scikit-learn", "Plotly",
         "Matplotlib", "PyPDF", "pdfplumber", "ReportLab", "Jinja2",
         "Pydantic v2", "FuzzyWuzzy",
     ]
-    tech_html = "".join(f'<span class="rh-tech-pill">{t}</span>' for t in tech)
-    st.markdown(f'<div class="rh-tech-row">{tech_html}</div>', unsafe_allow_html=True)
-
-    # ---- Footer ----------------------------------------------------------
+    tech_pills = "".join('<span class="rh-tech-pill">' + t + "</span>" for t in tech)
     st.markdown(
-        f"""
-        <div class="rh-footer">
-            <span>© {datetime.now().year} Junaid Ahmed Rupok · MIT License</span>
-            <span>
-                <a href="https://github.com/Junaid-Ahmed-Rupok/ReproHub" target="_blank">GitHub</a>
-                &nbsp;·&nbsp;
-                <a href="mailto:junaidahmedrupok@gmail.com">Contact</a>
-            </span>
-        </div>
-        """,
+        '<div class="rh-tech-row">' + tech_pills + "</div>",
+        unsafe_allow_html=True,
+    )
+
+    # ---- Footer ------------------------------------------------------
+    year = str(datetime.now().year)
+    st.markdown(
+        '<div class="rh-footer">'
+        + "<span>© " + year + " Junaid Ahmed Rupok · MIT License</span>"
+        + "<span>"
+        + '<a href="https://github.com/Junaid-Ahmed-Rupok/ReproHub" target="_blank">GitHub</a>'
+        + " &nbsp;·&nbsp; "
+        + '<a href="mailto:junaidahmedrupok@gmail.com">Contact</a>'
+        + "</span>"
+        + "</div>",
         unsafe_allow_html=True,
     )
