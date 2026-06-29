@@ -18,28 +18,24 @@ _STATUS = {
         "color": "#10B981",
         "bg": "rgba(16,185,129,0.15)",
         "icon": "✓",
-        "rank": 1,
     },
     "marginal": {
         "label": "Marginal",
         "color": "#F59E0B",
         "bg": "rgba(245,158,11,0.15)",
         "icon": "~",
-        "rank": 2,
     },
     "not_reproduced": {
         "label": "Not Reproduced",
         "color": "#EF4444",
         "bg": "rgba(239,68,68,0.15)",
         "icon": "✗",
-        "rank": 3,
     },
     "could_not_verify": {
         "label": "Could Not Verify",
         "color": "#8B95A9",
         "bg": "rgba(139,149,169,0.15)",
         "icon": "?",
-        "rank": 4,
     },
 }
 
@@ -58,219 +54,136 @@ html, body, [class*="css"] {
 
 /* ── Glassmorphism Utility ── */
 .glass-panel {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 20px !important;
+    padding: 20px !important;
 }
 
-/* ── Page header ── */
-.db-header {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    margin-bottom: 32px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+/* ── KPI Card Component ── */
+.kpi-card {
+    padding: 20px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.2s ease !important;
 }
-.db-header-icon {
-    width: 52px;
-    height: 52px;
-    flex-shrink: 0;
-    background: linear-gradient(135deg, #7C3AED, #5B4FE8);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    box-shadow: 0 8px 24px rgba(91, 79, 232, 0.25);
+.kpi-card:hover {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    transform: translateY(-3px) !important;
 }
-.db-header-title {
-    font-size: 26px;
-    font-weight: 700;
-    color: #F8FAFC;
-    margin: 0;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+.kpi-accent {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 4px !important;
+    border-radius: 20px 20px 0 0 !important;
 }
-.db-header-sub {
-    font-size: 13px;
-    color: #94A3B8;
-    margin-top: 2px;
-    font-weight: 400;
+.kpi-num {
+    font-size: 34px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    margin-top: 8px !important;
+    letter-spacing: -0.02em !important;
 }
-
-/* ── Score hero ── */
-.db-score-hero {
-    background: linear-gradient(135deg, rgba(91, 79, 232, 0.12) 0%, rgba(124, 58, 237, 0.05) 100%);
-    border: 1px solid rgba(91, 79, 232, 0.2);
-    border-radius: 24px;
-    padding: 32px 36px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 28px;
-    position: relative;
-    overflow: hidden;
+.kpi-label {
+    font-size: 11px !important;
+    color: #64748B !important;
+    margin-top: 6px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    font-weight: 500 !important;
 }
-.db-score-hero::before {
-    content: '';
-    position: absolute;
-    top: -60px;
-    right: -60px;
-    width: 240px;
-    height: 240px;
-    background: radial-gradient(circle, rgba(91, 79, 232, 0.15) 0%, transparent 70%);
-    pointer-events: none;
+.kpi-bar {
+    height: 4px !important;
+    border-radius: 4px !important;
+    margin-top: 14px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
 }
-.db-score-number {
-    font-size: 64px;
-    font-weight: 700;
-    line-height: 1;
-    color: #F8FAFC;
-    letter-spacing: -0.03em;
-}
-.db-score-pct {
-    font-size: 32px;
-    font-weight: 300;
-    color: #7C3AED;
-}
-.db-score-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #64748B;
-    margin-top: 8px;
-}
-.db-score-note {
-    font-size: 13px;
-    color: #94A3B8;
-    max-width: 320px;
-    line-height: 1.6;
+.kpi-bar-fill {
+    height: 100% !important;
+    border-radius: 4px !important;
+    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
-/* ── KPI strip ── */
-.db-kpi-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 32px;
+/* ── Score Hero ── */
+.score-hero {
+    background: linear-gradient(135deg, rgba(91, 79, 232, 0.12) 0%, rgba(124, 58, 237, 0.05) 100%) !important;
+    border: 1px solid rgba(91, 79, 232, 0.2) !important;
+    border-radius: 24px !important;
+    padding: 32px 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 24px !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
-.db-kpi {
-    padding: 22px 24px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.2s ease;
+.score-hero::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -60px !important;
+    right: -60px !important;
+    width: 240px !important;
+    height: 240px !important;
+    background: radial-gradient(circle, rgba(91, 79, 232, 0.15) 0%, transparent 70%) !important;
+    pointer-events: none !important;
 }
-.db-kpi:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
+.score-number {
+    font-size: 58px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    color: #F8FAFC !important;
+    letter-spacing: -0.03em !important;
 }
-.db-kpi-accent {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    border-radius: 20px 20px 0 0;
+.score-pct {
+    font-size: 28px !important;
+    font-weight: 300 !important;
+    color: #7C3AED !important;
 }
-.db-kpi-num {
-    font-size: 36px;
-    font-weight: 700;
-    line-height: 1;
-    margin-top: 8px;
-    letter-spacing: -0.02em;
+.score-label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    color: #64748B !important;
+    margin-top: 6px !important;
 }
-.db-kpi-label {
-    font-size: 11px;
-    color: #64748B;
-    margin-top: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 500;
-}
-.db-kpi-bar {
-    height: 4px;
-    border-radius: 4px;
-    margin-top: 14px;
-    background: rgba(255, 255, 255, 0.06);
-}
-.db-kpi-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+.score-note {
+    font-size: 13px !important;
+    color: #94A3B8 !important;
+    max-width: 340px !important;
+    line-height: 1.6 !important;
 }
 
-/* ── Section label ── */
-.db-section-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #475569;
-    margin: 32px 0 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+/* ── Section Label ── */
+.section-label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    color: #475569 !important;
+    margin: 32px 0 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
 }
-.db-section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.06);
-}
-
-/* ── Chart container ── */
-.db-chart-wrap {
-    padding: 12px 12px 4px;
-    margin-bottom: 0;
+.section-label::after {
+    content: '' !important;
+    flex: 1 !important;
+    height: 1px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
 }
 
-/* ── Callout ── */
-.db-callout {
-    background: rgba(245, 158, 11, 0.08);
-    border: 1px solid rgba(245, 158, 11, 0.15);
-    border-radius: 14px;
-    padding: 16px 20px;
-    font-size: 13px;
-    color: #FCD34D;
-    line-height: 1.6;
-    margin-bottom: 24px;
-}
-.db-callout b {
-    font-weight: 600;
-}
-
-/* ── Empty state ── */
-.db-empty {
-    text-align: center;
-    padding: 80px 24px;
-}
-.db-empty-icon {
-    font-size: 56px;
-    margin-bottom: 20px;
-    opacity: 0.6;
-}
-.db-empty-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #CBD5E1;
-    margin-bottom: 8px;
-}
-.db-empty-sub {
-    font-size: 14px;
-    color: #64748B;
-}
-
-/* ── Table override (st.dataframe) ── */
+/* ── Table Styling ── */
 [data-testid="stDataFrame"] {
     background: transparent !important;
 }
 [data-testid="stDataFrame"] table {
     border-collapse: separate !important;
-    border-spacing: 0 4px !important;
+    border-spacing: 0 6px !important;
 }
 [data-testid="stDataFrame"] thead tr th {
     background: rgba(255, 255, 255, 0.04) !important;
@@ -291,6 +204,7 @@ html, body, [class*="css"] {
 }
 [data-testid="stDataFrame"] tbody tr:hover td {
     background: rgba(255, 255, 255, 0.05) !important;
+    transition: background 0.2s ease !important;
 }
 
 /* ── Download Button ── */
@@ -299,7 +213,7 @@ html, body, [class*="css"] {
     color: white !important;
     border: none !important;
     border-radius: 12px !important;
-    padding: 12px 28px !important;
+    padding: 10px 28px !important;
     font-size: 14px !important;
     font-weight: 600 !important;
     font-family: 'Inter', sans-serif !important;
@@ -309,6 +223,42 @@ html, body, [class*="css"] {
 .stDownloadButton > button:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 8px 24px rgba(91, 79, 232, 0.4) !important;
+}
+
+/* ── Empty State ── */
+.empty-state {
+    text-align: center !important;
+    padding: 80px 24px !important;
+}
+.empty-icon {
+    font-size: 56px !important;
+    margin-bottom: 20px !important;
+    opacity: 0.6 !important;
+}
+.empty-title {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: #CBD5E1 !important;
+    margin-bottom: 8px !important;
+}
+.empty-sub {
+    font-size: 14px !important;
+    color: #64748B !important;
+}
+
+/* ── Callout ── */
+.callout-box {
+    background: rgba(245, 158, 11, 0.08) !important;
+    border: 1px solid rgba(245, 158, 11, 0.15) !important;
+    border-radius: 14px !important;
+    padding: 16px 20px !important;
+    font-size: 13px !important;
+    color: #FCD34D !important;
+    line-height: 1.6 !important;
+    margin-bottom: 24px !important;
+}
+.callout-box b {
+    font-weight: 600 !important;
 }
 
 /* ── Plotly override ── */
@@ -360,7 +310,6 @@ def _donut_chart(counts: Dict[str, int], total: int):
         sort=False,
     ))
 
-    score_pct = round(counts.get("reproduced", 0) / total * 100) if total else 0
     fig.add_annotation(
         text=f"<b style='font-size:32px; color:#F8FAFC;'>{total}</b>",
         x=0.5, y=0.58, showarrow=False,
@@ -450,40 +399,33 @@ def _bar_chart(results: List[Dict]):
     return fig
 
 
-def _format_dataframe(df: pd.DataFrame, claim_lookup: Dict[str, str]) -> pd.DataFrame:
-    """Prepare and clean the dataframe for display."""
+def _style_dataframe(df: pd.DataFrame, claim_lookup: Dict[str, str]) -> pd.DataFrame:
+    """Prepare and style the dataframe for display."""
     df_display = df.copy()
 
     # 1. Map Claim ID to Claim Text
     df_display["Claim"] = df_display["claim_id"].map(claim_lookup).fillna(df_display["claim_id"])
     df_display["Claim"] = df_display["Claim"].astype(str).apply(lambda x: x[:75] + "…" if len(x) > 75 else x)
 
-    # 2. Map Status to HTML Chip
-    def status_chip(status):
-        meta = _STATUS.get(status, _STATUS["could_not_verify"])
-        return f"""
-        <span style="display:inline-flex; align-items:center; gap:4px; 
-                     background:{meta['bg']}; color:{meta['color']}; 
-                     padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600;">
-            {meta['icon']} {meta['label']}
-        </span>
-        """
-    df_display["Status"] = df_display["status"].apply(status_chip)
+    # 2. Map Status to plain text (for sorting) and prepare color mapping
+    df_display["Status_Label"] = df_display["status"].map(lambda x: _STATUS.get(x, _STATUS["could_not_verify"])["label"])
+    df_display["Status_Color"] = df_display["status"].map(lambda x: _STATUS.get(x, _STATUS["could_not_verify"])["color"])
+    df_display["Status_BG"] = df_display["status"].map(lambda x: _STATUS.get(x, _STATUS["could_not_verify"])["bg"])
 
     # 3. Format P-Values
     df_display["Claimed p"] = df_display["claimed_p_value"].apply(_fmt_p)
     df_display["Repro. p"] = df_display["reproduced_p_value"].apply(_fmt_p)
 
-    # 4. Format Delta with color
+    # 4. Format Delta
     def fmt_delta(val):
         if val is None or pd.isna(val):
             return "—"
         try:
             val = float(val)
             if val < 0.001:
-                return f"<span style='color:#10B981;font-family:JetBrains Mono;'>+{val:.4f}</span>"
+                return f"+{val:.4f}"
             else:
-                return f"<span style='color:#EF4444;font-family:JetBrains Mono;'>{val:.4f}</span>"
+                return f"{val:.4f}"
         except (ValueError, TypeError):
             return "—"
     df_display["Δ"] = df_display["discrepancy"].apply(fmt_delta)
@@ -491,8 +433,8 @@ def _format_dataframe(df: pd.DataFrame, claim_lookup: Dict[str, str]) -> pd.Data
     # 5. Test Type
     df_display["Test"] = df_display["test_type"].fillna("—").astype(str)
 
-    # 6. Select and reorder columns
-    df_display = df_display[["Claim", "Test", "Status", "Claimed p", "Repro. p", "Δ"]]
+    # 6. Select final columns
+    df_display = df_display[["Claim", "Test", "Status_Label", "Status_Color", "Status_BG", "Claimed p", "Repro. p", "Δ"]]
     return df_display
 
 
@@ -501,11 +443,11 @@ def render():
 
     # ── Header ────────────────────────────────────────────────────────────────
     st.markdown("""
-    <div class="db-header">
-      <div class="db-header-icon">📊</div>
+    <div style="display:flex; align-items:center; gap:18px; margin-bottom:32px; padding-bottom:24px; border-bottom:1px solid rgba(255,255,255,0.06);">
+      <div style="width:52px; height:52px; flex-shrink:0; background:linear-gradient(135deg, #7C3AED, #5B4FE8); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 8px 24px rgba(91,79,232,0.25);">📊</div>
       <div>
-        <div class="db-header-title">Verification Dashboard</div>
-        <div class="db-header-sub">Statistical reproducibility results at a glance</div>
+        <div style="font-size:26px; font-weight:700; color:#F8FAFC; margin:0; line-height:1.2; letter-spacing:-0.02em;">Verification Dashboard</div>
+        <div style="font-size:13px; color:#94A3B8; margin-top:2px; font-weight:400;">Statistical reproducibility results at a glance</div>
       </div>
     </div>
     """, unsafe_allow_html=True)
@@ -513,10 +455,10 @@ def render():
     # ── Guard ─────────────────────────────────────────────────────────────────
     if not st.session_state.get("analysis_complete"):
         st.markdown("""
-        <div class="db-empty">
-          <div class="db-empty-icon">🔬</div>
-          <div class="db-empty-title">No results yet</div>
-          <div class="db-empty-sub">Upload a paper and verify its claims first,<br>then return here to explore the results.</div>
+        <div class="empty-state">
+          <div class="empty-icon">🔬</div>
+          <div class="empty-title">No results yet</div>
+          <div class="empty-sub">Upload a paper and verify its claims first,<br>then return here to explore the results.</div>
         </div>
         """, unsafe_allow_html=True)
         return
@@ -534,14 +476,12 @@ def render():
     # ── Score hero ────────────────────────────────────────────────────────────
     repro_rate = round(counts["reproduced"] / total * 100) if total else 0
     st.markdown(f"""
-    <div class="db-score-hero glass-panel">
+    <div class="score-hero">
       <div>
-        <div class="db-score-number" style="color:{score_c};">
-          {score}<span class="db-score-pct">%</span>
-        </div>
-        <div class="db-score-label">Reproducibility Score</div>
+        <div class="score-number" style="color:{score_c};">{score}<span class="score-pct">%</span></div>
+        <div class="score-label">Reproducibility Score</div>
       </div>
-      <div class="db-score-note">
+      <div class="score-note">
         <b style="color:{_STATUS['reproduced']['color']};">{counts['reproduced']} reproduced</b>, 
         <b style="color:{_STATUS['marginal']['color']};">{counts['marginal']} marginal</b>, 
         <b style="color:{_STATUS['not_reproduced']['color']};">{counts['not_reproduced']} failed</b>, 
@@ -552,28 +492,27 @@ def render():
     """, unsafe_allow_html=True)
 
     # ── KPI strip ─────────────────────────────────────────────────────────────
-    kpi_html = '<div class="db-kpi-strip">'
-    for key, meta in _STATUS.items():
+    cols = st.columns(4)
+    for idx, (key, meta) in enumerate(_STATUS.items()):
         n = counts[key]
         pct = round(n / total * 100) if total else 0
-        kpi_html += f"""
-        <div class="db-kpi glass-panel">
-          <div class="db-kpi-accent" style="background:{meta['color']};"></div>
-          <div style="font-size:11px;color:{meta['color']};font-weight:600; letter-spacing:.07em;text-transform:uppercase;">{meta['label']}</div>
-          <div class="db-kpi-num" style="color:{meta['color']};">{n}</div>
-          <div class="db-kpi-label">of {total} claims</div>
-          <div class="db-kpi-bar">
-            <div class="db-kpi-bar-fill" style="width:{pct}%;background:{meta['color']};"></div>
-          </div>
-        </div>
-        """
-    kpi_html += '</div>'
-    st.markdown(kpi_html, unsafe_allow_html=True)
+        with cols[idx]:
+            st.markdown(f"""
+            <div class="glass-panel kpi-card">
+              <div class="kpi-accent" style="background:{meta['color']};"></div>
+              <div style="font-size:11px;color:{meta['color']};font-weight:600;letter-spacing:.07em;text-transform:uppercase;">{meta['label']}</div>
+              <div class="kpi-num" style="color:{meta['color']};">{n}</div>
+              <div class="kpi-label">of {total} claims</div>
+              <div class="kpi-bar">
+                <div class="kpi-bar-fill" style="width:{pct}%;background:{meta['color']};"></div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
 
     # ── Unverifiable callout ──────────────────────────────────────────────────
     if counts["could_not_verify"] > 0:
         st.markdown(f"""
-        <div class="db-callout">
+        <div class="callout-box">
           <b>ℹ️ {counts['could_not_verify']} claim(s) could not be verified</b> —
           this means ReproHub was unable to run the test (e.g. an unmapped column or
           unsupported test type), not that the finding is incorrect.
@@ -582,13 +521,13 @@ def render():
         """, unsafe_allow_html=True)
 
     # ── Charts ────────────────────────────────────────────────────────────────
-    st.markdown('<div class="db-section-label">Outcome breakdown</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-label">Outcome breakdown</div>', unsafe_allow_html=True)
 
     col_donut, col_bar = st.columns([1, 1.6], gap="medium")
 
     with col_donut:
         with st.container():
-            st.markdown('<div class="glass-panel db-chart-wrap">', unsafe_allow_html=True)
+            st.markdown('<div class="glass-panel" style="padding:12px 12px 4px;">', unsafe_allow_html=True)
             fig_donut = _donut_chart(counts, total)
             st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar": False})
             st.markdown('</div>', unsafe_allow_html=True)
@@ -597,33 +536,44 @@ def render():
         with st.container():
             fig_bar = _bar_chart(results)
             if fig_bar:
-                st.markdown('<div class="glass-panel db-chart-wrap">', unsafe_allow_html=True)
+                st.markdown('<div class="glass-panel" style="padding:12px 12px 4px;">', unsafe_allow_html=True)
                 st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
                 st.markdown('</div>', unsafe_allow_html=True)
             else:
                 st.markdown("""
-                <div class="glass-panel db-chart-wrap" style="display:flex;align-items:center;
-                     justify-content:center;height:200px;color:#64748B;font-size:13px;">
+                <div class="glass-panel" style="display:flex;align-items:center;justify-content:center;height:200px;color:#64748B;font-size:13px;">
                   No comparable p-value data available for chart
                 </div>
                 """, unsafe_allow_html=True)
 
     # ── Claims table ──────────────────────────────────────────────────────────
-    st.markdown('<div class="db-section-label">Claim-level results</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-label">Claim-level results</div>', unsafe_allow_html=True)
 
-    # Process dataframe for display
+    # Process dataframe
     df_raw = pd.DataFrame(results)
-    df_display = _format_dataframe(df_raw, claim_lookup)
+    df_display = _style_dataframe(df_raw, claim_lookup)
 
-    # Use st.dataframe with custom column config to fix the bug
+    # Apply custom styling to the dataframe for color-coded status chips
+    def highlight_status(row):
+        return [
+            f'background-color: {row["Status_BG"]}; color: {row["Status_Color"]}; border-radius: 12px; padding: 2px 10px; font-weight: 600; font-size: 11px; display: inline-block;'
+            if col == "Status_Label" else ''
+            for col in row.index
+        ]
+
+    styled_df = df_display.style.apply(highlight_status, axis=1)
+
+    # Display using st.dataframe with clean configurations
     st.dataframe(
-        df_display,
+        styled_df,
         use_container_width=True,
         hide_index=True,
         column_config={
             "Claim": st.column_config.TextColumn("Claim", width="large"),
             "Test": st.column_config.TextColumn("Test", width="small"),
-            "Status": st.column_config.TextColumn("Status", width="medium"),
+            "Status_Label": st.column_config.TextColumn("Status", width="medium"),
+            "Status_Color": st.column_config.TextColumn("_", width="small", visible=False),
+            "Status_BG": st.column_config.TextColumn("_", width="small", visible=False),
             "Claimed p": st.column_config.TextColumn("Claimed p", width="small"),
             "Repro. p": st.column_config.TextColumn("Repro. p", width="small"),
             "Δ": st.column_config.TextColumn("Δ", width="small"),
@@ -631,7 +581,7 @@ def render():
     )
 
     # ── Export ────────────────────────────────────────────────────────────────
-    st.markdown('<div class="db-section-label">Export</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-label">Export</div>', unsafe_allow_html=True)
 
     results_df = pd.DataFrame(results)
     csv_bytes = results_df.to_csv(index=False).encode("utf-8")
