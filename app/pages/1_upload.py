@@ -30,7 +30,7 @@ def render():
         st.subheader("📄 Research Paper")
         paper_file = st.file_uploader("Choose a PDF file", type=["pdf"], key="paper_uploader")
         if paper_file:
-            if paper_file.size > config.MAX_FILE_SIZE_BYTES:
+            if not config.check_file_size(paper_file.size):
                 st.error(f"File too large. Max size: {config.MAX_FILE_SIZE_MB}MB")
                 return
             st.success(f"✅ {paper_file.name} uploaded")
@@ -38,10 +38,25 @@ def render():
 
     with col2:
         st.subheader("📊 Dataset")
-        dataset_file = st.file_uploader("Choose a CSV file", type=["csv"], key="dataset_uploader")
+        # Accept both extensions config.py actually declares as allowed
+        # (previously only .csv was wired up here despite .xlsx being
+        # listed in config.ALLOWED_DATA_EXTENSIONS) - and read each with
+        # the function that actually understands its format.
+        dataset_file = st.file_uploader(
+            "Choose a CSV or Excel file", type=["csv", "xlsx"], key="dataset_uploader"
+        )
         if dataset_file:
+            # Dataset size was never checked at all before - only the
+            # paper file was. config.check_file_size() already existed
+            # for exactly this purpose.
+            if not config.check_file_size(dataset_file.size):
+                st.error(f"File too large. Max size: {config.MAX_FILE_SIZE_MB}MB")
+                return
             try:
-                df = pd.read_csv(dataset_file)
+                if dataset_file.name.lower().endswith(".xlsx"):
+                    df = pd.read_excel(dataset_file)
+                else:
+                    df = pd.read_csv(dataset_file)
                 st.success(f"✅ {dataset_file.name} uploaded ({len(df)} rows, {len(df.columns)} columns)")
                 with st.expander("📊 Dataset Preview (first 5 rows)"):
                     st.dataframe(df.head(), use_container_width=True)
