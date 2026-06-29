@@ -504,6 +504,7 @@ html, body, [class*="css"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 12px;
 }
 .ring-svg {
     position: absolute;
@@ -513,45 +514,34 @@ html, body, [class*="css"] {
     height: 100%;
     filter: drop-shadow(0 0 20px rgba(91, 79, 232, 0.25));
 }
-.ring-score-text {
-    position: relative;
-    z-index: 10;
-    font-size: 36px;
-    font-weight: 700;
-    color: #F8FAFC;
-    letter-spacing: -0.02em;
-}
-
-.score-label-text {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #64748B;
-    margin-top: 4px;
-}
 
 /* ── Native Metric Override ── */
 [data-testid="stMetric"] {
     background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
     border-radius: 12px !important;
-    padding: 14px 10px !important;
+    padding: 18px 10px !important;
     text-align: center !important;
     backdrop-filter: blur(4px) !important;
+    transition: all 0.2s ease !important;
+}
+[data-testid="stMetric"]:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
 }
 [data-testid="stMetric"] .stMetricValue {
-    font-size: 24px !important;
+    font-size: 28px !important;
     font-weight: 700 !important;
     line-height: 1 !important;
     padding: 0 !important;
+    margin-top: 4px !important;
 }
 [data-testid="stMetric"] .stMetricLabel {
-    font-size: 10px !important;
-    color: #64748B !important;
-    font-weight: 500 !important;
+    font-size: 11px !important;
+    color: #94A3B8 !important;
+    font-weight: 600 !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
+    letter-spacing: 0.06em !important;
 }
 
 /* ── Legend ── */
@@ -559,17 +549,18 @@ html, body, [class*="css"] {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px 16px;
-    margin-top: 18px;
-    padding: 14px 16px;
+    gap: 12px 20px;
+    margin-top: 20px;
+    padding: 14px 20px;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 12px;
     width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     font-size: 12px;
     color: #94A3B8;
 }
@@ -581,7 +572,7 @@ html, body, [class*="css"] {
 }
 .legend-val {
     color: #CBD5E1;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* ── Footer Meta ── */
@@ -589,7 +580,7 @@ html, body, [class*="css"] {
     font-size: 11px;
     color: #475569;
     text-align: center;
-    margin-top: 16px;
+    margin-top: 18px;
 }
 
 /* ── Generate Button ── */
@@ -808,17 +799,22 @@ def render():
         with st.container():
             st.markdown('<div class="glass-panel score-preview-panel">', unsafe_allow_html=True)
             
-            # Ring Chart
+            # Ring Chart (SAFE: SVG is rendered separately to avoid HTML escaping issues)
             ring_svg = _score_ring_svg(score)
             st.markdown(f"""
             <div class="ring-container">
                 {ring_svg}
-                <div class="ring-score-text">{score}%</div>
             </div>
-            <div class="score-label-text">Reproducibility Score</div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div style="text-align:center; margin-bottom: 20px;">
+                <div style="font-size: 36px; font-weight: 700; color: #F8FAFC; line-height: 1.2; letter-spacing: -0.02em;">{score}%</div>
+                <div style="font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #64748B; margin-top: 2px;">Reproducibility Score</div>
+            </div>
             """, unsafe_allow_html=True)
 
-            # Stats Grid (Using Native Streamlit Metrics to avoid HTML escaping)
+            # Stats Grid (Using Native Streamlit Metrics to guarantee NO HTML escaping)
             col1, col2 = st.columns(2)
             with col1:
                 st.metric(label="Reproduced", value=counts['reproduced'], delta=None)
