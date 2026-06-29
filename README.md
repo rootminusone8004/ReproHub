@@ -52,7 +52,7 @@ pip install -r requirements.txt
 streamlit run app/main.py
 ```
 
-👉 **Live Demo:** [reprohub.streamlit.app](https://reprohub.streamlit.app/)
+👉 **Live Demo:** [reprohub.streamlit.app](https://reproapp-8jb7vbhnqyltxq23bsr8xn.streamlit.app/)
 
 ---
 
