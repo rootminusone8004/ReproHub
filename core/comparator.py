@@ -52,8 +52,8 @@ def _p_component(claimed_p: float, reproduced_p: float) -> float:
     return math.exp(-30 * diff)
 
 
-def _effect_component(claimed_es: float, reproduced_es: Optional[float]) -> Optional[float]:
-    if reproduced_es is None:
+def _effect_component(claimed_es: Optional[float], reproduced_es: Optional[float]) -> Optional[float]:
+    if claimed_es is None or reproduced_es is None:
         return None
     diff = abs(claimed_es - reproduced_es)
     return math.exp(-10 * diff)
