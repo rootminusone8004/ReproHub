@@ -103,18 +103,18 @@ Each component is scored 0–1 using exponential decay, so small differences are
 
 ## 🗺️ How It Works
 
+<div align="center">
+
+```mermaid
+flowchart
+
+    A(Upload PDF + CSV Data) --> B("Extract Claims (Regex/APA)")
+    B --> C("Map Columns (Fuzzy Match + Manual Review)")
+    C --> D("Re-run Tests (SciPy / statsmodels)")
+    D --> E(Composite Score + Explanation)
+    E --> F(Export PDF Report)
 ```
- ┌─────────────┐     ┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
- │  Upload PDF │────▶│ Extract      │────▶│ Map Columns     │────▶│ Re-run Tests │
- │  + CSV Data │     │ Claims       │     │ (Fuzzy Match +  │     │ (SciPy /     │
- └─────────────┘     │ (Regex/APA)  │     │  Manual Review) │     │  statsmodels)│
-                     └──────────────┘     └─────────────────┘     └──────┬───────┘
-                                                                          │
-                     ┌──────────────┐     ┌──────────────────┐           │
-                     │ Export PDF   │◀────│ Composite Score  │◀──────────┘
-                     │ Report       │     │ + Explanation    │
-                     └──────────────┘     └──────────────────┘
-```
+</div>
 
 **Step 1 — Upload:** Provide a PDF paper and its CSV dataset.
 
